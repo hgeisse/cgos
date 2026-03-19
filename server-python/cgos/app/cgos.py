@@ -137,6 +137,16 @@ def openDatabase() -> None:
         except sqlite3.Error as e:
             logger.error(f"Error opening {cfg.game_archive_database} database.")
             raise Exception(e)
+
+        try:
+            dbrec.execute("CREATE TABLE IF NOT EXISTS games(gid, see, see2)")
+            dbrec.commit()
+        except sqlite3.Error as e:
+            logger.error(
+                f"Error creating 'games' table in "
+                + f"{cfg.game_archive_database} database."
+            )
+            raise Exception(e)
     else:
         logger.error("Skip game_archive_database")
         dbrec = None
