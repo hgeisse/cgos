@@ -128,14 +128,14 @@ def openDatabase() -> None:
     try:
         db = sqlite3.connect(cfg.database_state_file, timeout=40000)
     except sqlite3.Error as e:
-        logger.error(f"Error opening {cfg.database_state_file} datbase.")
+        logger.error(f"Error opening {cfg.database_state_file} database.")
         raise Exception(e)
 
     if cfg.game_archive_database is not None:
         try:
             dbrec = sqlite3.connect(cfg.game_archive_database, timeout=40000)
         except sqlite3.Error as e:
-            logger.error(f"Error opening {cfg.game_archive_database} datbase.")
+            logger.error(f"Error opening {cfg.game_archive_database} database.")
             raise Exception(e)
     else:
         logger.error("Skip game_archive_database")
@@ -2017,7 +2017,7 @@ def runServer() -> None:
 
     os.makedirs(cfg.htmlDir, exist_ok=True)
 
-    # make databale directory
+    # make database directory
     def create_parent_dir(file: str) -> None:
         dir = os.path.dirname(file)
         if not os.path.exists(dir):
