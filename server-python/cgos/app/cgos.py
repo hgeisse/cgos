@@ -2021,7 +2021,7 @@ def runServer() -> None:
     def create_parent_dir(file: str) -> None:
         dir = os.path.dirname(file)
         if not os.path.exists(dir):
-            os.makedirs(os.path.dirname(dir))
+            os.makedirs(os.path.dirname(dir), exist_ok=True)
 
     if cfg.game_archive_database is not None:
         create_parent_dir(cfg.game_archive_database)
