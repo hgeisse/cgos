@@ -1,0 +1,5 @@
+1. Install tcl/tk on your machine.
+2. Install the package 'tcl-vfs'.
+3. Copy one of the tclkits (e.g., tclkit-linux-x86_64) and sdx.kit
+   to a common directory. The tclkit should be renamed to 'tclkit'.
+4. Start with './tclkit sdx.kit'.

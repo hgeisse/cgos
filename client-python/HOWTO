@@ -1,0 +1,25 @@
+
+How to set up the client
+------------------------
+
+1. Go to directory <client-code>
+cd <client-code>
+
+2. Configure client.cfg
+You have to set a few configurable parameters of the client:
+    <name-of-engine>   name of your Go engine (may contain spaces)
+    <command-line>     command to start the engine, with all arguments
+    <server-host>      name of the machine running the server
+    <server-user>      your user name on the server (no account necessary)
+    <server-password>  your password for this user
+The files simple.cfg and sample.cfg contain examples.
+
+3. Start Go client
+python src/cgosclient.py client.cfg &
+This will also start the Go engine.
+
+4. Stop Go client
+touch <client-code>/kill.txt
+This will also stop the Go engine.
+The kill file is automatically deleted when the client is started again.
+

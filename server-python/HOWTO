@@ -1,0 +1,42 @@
+
+How to set up the server
+------------------------
+
+1. Create a Python environment (this step is optional)
+My preferred tool to manage Python environments is conda:
+conda create -n cgos-server python==3.12.0
+conda activate cgos-server
+
+2. Go to directory <server-code>
+cd <server-code>
+
+3. Install dependencies
+pip install -r requirements.txt
+
+4. Configure cgos19.cfg
+You have to decide where on the server the data should be stored.
+I will refer to this directory as <server-data>.
+Edit cgos19.cfg and replace all occurrences of <server-data> with
+your (absolute) path.
+
+5. Create a few directories and an empty database
+mkdir logs
+mkdir -p <server-data>/19x19
+touch <server-data>/19x19/archive.db
+
+6. Copy a few files used for representation of results
+mkdir -p <server-data>/public_html/19x19/images
+cp cgos/webuild_images/cgosLogo.png <server-data>/public_html/19x19/images
+
+7. Start the Go server
+python cgos/server.py cgos19.cfg &
+
+8. Start the website builder
+python cgos/webuild.py cgos19.cfg &
+Note: You should wait with this until the first match at least has
+begun, otherwise the start will fail and you have to restart later.
+
+9. Stop the Go server
+touch <server-data>/killCgos19
+The kill file is automatically deleted when the server is started again.
+
