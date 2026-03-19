@@ -383,7 +383,7 @@ else:
 try:
     db = sqlite3.connect(cfg.database_state_file, timeout=40000)
 except sqlite3.Error as e:
-    print(f"Error opening {cfg.database_state_file} datbase.")
+    print(f"Error opening {cfg.database_state_file} database.")
     raise Exception(e)
 
 
