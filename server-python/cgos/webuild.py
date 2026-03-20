@@ -41,7 +41,7 @@ def log(msg: str) -> None:
 
 rating: Dict[str, str] = {}
 db: sqlite3.Connection
-template_loader = jinja2.FileSystemLoader("cgos/webuild_template")
+template_loader = jinja2.FileSystemLoader("cgos/webuild_templates")
 
 standings_template = jinja2.Environment(loader=template_loader).get_template(
     name="standings.jinja.html"
