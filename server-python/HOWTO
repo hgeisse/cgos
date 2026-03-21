@@ -14,19 +14,21 @@ cd <server-code>
 pip install -r requirements.txt
 
 4. Configure cgos19.cfg
-You have to decide where on the server the data should be stored.
-I will refer to this directory as <server-data>.
+You have to decide where on the server the data of the running server
+should be written. I will refer to this directory as <server-data>.
+You must as well decide where on the server the web pages of the server
+should be stored. I will refer to this directory as <server-html>.
 Edit cgos19.cfg and replace all occurrences of <server-data> with
-your (absolute) path.
+your (absolute) path. Do the same with <server-html>.
 
 5. Create a few directories and an empty database
 mkdir logs
 mkdir -p <server-data>/19x19
 touch <server-data>/19x19/archive.db
 
-6. Copy a few files used for representation of results
-mkdir -p <server-data>/public_html/19x19/images
-cp cgos/webuild_images/cgosLogo.png <server-data>/public_html/19x19/images
+6. Copy the directory tree used for representation of results
+mkdir -p <server-html>
+cp -rp cgos/webuild_html/* <server-html>
 
 7. Start the Go server
 python cgos/server.py cgos19.cfg &
@@ -37,6 +39,6 @@ Note: You should wait with this until the first match at least has
 begun, otherwise the start will fail and you have to restart later.
 
 9. Stop the Go server
-touch <server-data>/killCgos19
+touch <server-code>/kill_cgos19
 The kill file is automatically deleted when the server is started again.
 
