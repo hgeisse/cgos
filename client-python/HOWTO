@@ -19,7 +19,7 @@ python src/cgosclient.py client.cfg &
 This will also start the Go engine.
 
 4. Stop Go client
-touch <client-code>/kill.txt
+touch <client-code>/kill_client
 This will also stop the Go engine.
 The kill file is automatically deleted when the client is started again.
 

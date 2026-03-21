@@ -62,7 +62,7 @@ class CGOSClient(object):
     """ How often to output stats, etc., in seconds """
 
     def __init__(self, engineConfigurationSections: List[ConfigSection],
-                 killFileName: str = "kill.txt",
+                 killFileName: str = "kill_client",
                  logFileName: Optional[str] = None) -> None:
         """
         Initialise the client, without connecting anything yet
