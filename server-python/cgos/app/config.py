@@ -60,6 +60,7 @@ class Configs:
     provisionalAge: float
     establishedAge: float
     killFile: str
+    killFile2: str
     leeway: int
     anchor_match_rate: float
     badUsersFile: str
@@ -112,6 +113,7 @@ class Configs:
         self.provisionalAge = float(cfg["provisionalAge"])
         self.establishedAge = float(cfg["establishedAge"])
         self.killFile = str(cfg["killFile"])
+        self.killFile2 = str(cfg["killFile2"])
         self.anchor_match_rate = float(cfg.get("anchor_match_rate", "0.10"))
         self.badUsersFile = str(cfg["bad_users_file"])
         self.moveIntervalBetweenSave = int(cfg["moveIntervalBetweenSave"])

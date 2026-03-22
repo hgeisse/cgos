@@ -406,10 +406,14 @@ pageName = f"{cfg.htmlDir}/standings.html"
 ct = 0.0
 count = 0
 
+if os.path.exists(cfg.killFile2):
+    # killfile present, delete it
+    os.remove(cfg.killFile2)
+
 while True:
     x = os.path.getmtime(cfg.web_data_file)
 
-    print(cfg.web_data_file)
+    # print(cfg.web_data_file)
 
     if x != ct:
         count += 1
@@ -421,3 +425,7 @@ while True:
         ct = x
 
     time.sleep(28000 / 1000)
+
+    if os.path.exists(cfg.killFile2):
+        # killfile present, stop
+        break
