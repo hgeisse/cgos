@@ -6,14 +6,14 @@ Start a cgos server and web page builder.
 
 ```sh
 python3 -m pip install -r requirements.txt
-python3 cgos/server.py cgos19.ini &
-python3 cgos/webuild.py cgos19.ini &
+python3 cgos/server.py cgos19.cfg &
+python3 cgos/webuild.py cgos19.cfg &
 ```
 
 If you used previous version, migrate database.
 
 ```sh
-sqlite3 /path/to/cgos.state < db/migrate-001-create-games-index.sql
+sqlite3 /path/to/state.db < db/migrate-001-create-games-index.sql
 ```
 
 ### genmove_analyze extention
