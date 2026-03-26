@@ -1,0 +1,57 @@
+Note: This is *NOT* a comprehensive documentation of the server - I wish
+such a thing existed. It is merely a bunch of random notes I took while
+trying to understand certain aspects of the program.
+
+
+1. "The server" is not quite correct - there is a separate server for
+each board size (19x19, 13x13, 9x9). Of course they are running the same
+code base, but several data and html directories are specific to a board
+size, which must be specified in the corresponding configuration file.
+
+
+2. The server maintains two SQLite databases:
+    - archive.db stores the game archive
+    - state.db stores the state of the server
+
+2.1 archive.db
+    This database consists of a single table ("games").
+
+    "games"        has columns: gid, see, see2
+        gid
+        see
+        see2
+
+2.2 state.db
+    This database consists of 5 tables ("anchors", "clients", "gameid",
+    "games", "password").
+
+    "anchors"      has columns: name, rating
+        name
+        rating
+
+    "clients"      has columns: name, count
+        name
+        count
+
+    "gameid"       has columns: gid
+        gid        This is an integer which uniquely denotes a game.
+
+    "games"        has columns: gid, w, wr, b, br, dte, wtu, btu, res, final
+        gid
+        w
+        wr
+        b
+        br
+        dte
+        wtu
+        btu
+        res
+        final
+
+    "password"     has columns: name, pass, games, rating, K, last_game
+        name
+        pass
+        games
+        rating
+        K
+        last_game
