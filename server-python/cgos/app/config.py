@@ -59,8 +59,8 @@ class Configs:
     compressSgf: bool
     provisionalAge: float
     establishedAge: float
-    killFile: str
-    killFile2: str
+    killFileSrv: str
+    killFileWeb: str
     leeway: int
     anchor_match_rate: float
     badUsersFile: str
@@ -112,8 +112,8 @@ class Configs:
             self.compressSgf = False
         self.provisionalAge = float(cfg["provisionalAge"])
         self.establishedAge = float(cfg["establishedAge"])
-        self.killFile = str(cfg["killFile"])
-        self.killFile2 = str(cfg["killFile2"])
+        self.killFileSrv = str(cfg["killFileSrv"])
+        self.killFileWeb = str(cfg["killFileWeb"])
         self.anchor_match_rate = float(cfg.get("anchor_match_rate", "0.10"))
         self.badUsersFile = str(cfg["bad_users_file"])
         self.moveIntervalBetweenSave = int(cfg["moveIntervalBetweenSave"])

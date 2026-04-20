@@ -1648,7 +1648,7 @@ def schedule_games() -> None:
         # match games & write file
         ctme = datetime.datetime.now(datetime.timezone.utc)
 
-        if os.path.exists(cfg.killFile):
+        if os.path.exists(cfg.killFileSrv):
             write_web_data_file(ctme)
 
             db.commit()
@@ -2011,8 +2011,8 @@ def runServer() -> None:
 
     # remove any existing kill file
     # -----------------------------
-    if os.path.exists(cfg.killFile):
-        os.remove(cfg.killFile)
+    if os.path.exists(cfg.killFileSrv):
+        os.remove(cfg.killFileSrv)
 
     workdir = os.path.dirname(cfg.web_data_file)
     logger.info(f"datafile:'{cfg.web_data_file}' -> workdir:'{workdir}'")
