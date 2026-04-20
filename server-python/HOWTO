@@ -3,7 +3,10 @@ How to set up the server
 ------------------------
 
 1. Create a Python environment (this step is optional)
-My preferred tool to manage Python environments is conda:
+My preferred tool to manage Python environments is conda-forge.
+First, install conda by running the Miniforge installer
+(see https://conda-forge.org).
+Then, create and activate an environment for the cgos server:
 conda create -n cgos-server python==3.12.0
 conda activate cgos-server
 
@@ -20,6 +23,10 @@ You must as well decide where on the server the web pages of the server
 should be stored. I will refer to this directory as <server-html>.
 Edit cgos19.cfg and replace all occurrences of <server-data> with
 your (absolute) path. Do the same with <server-html>.
+Note: <server-html> should be a directory that your web server presents
+to client browsers. In my case (Ubuntu 24.04), the web server is Apache2,
+configured to use /var/www/html as base directory. Thus, <server-html>
+is /var/www/html/cgos on the machine running the server.
 
 5. Create a few directories and an empty database
 mkdir logs
