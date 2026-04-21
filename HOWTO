@@ -8,7 +8,7 @@ It was created by Don Dailey for the computer Go community to test,
 develop, and rate Go-playing programs. CGOS manages game scheduling
 automatically, allowing developers to connect their bots and have them
 play a variety of opponents without human intervention. The server uses
-the ELO rating system to evaluate the strength of bots. Programs connect
+the Elo rating system to evaluate the strength of bots. Programs connect
 to the server using the Go Text Protocol (GTP). There are no provisions
 for chatting with other users; CGOS is for computers only.
 

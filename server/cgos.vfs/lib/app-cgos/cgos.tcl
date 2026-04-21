@@ -1315,8 +1315,8 @@ proc  schedule_games {} {
 	}
 
 
-	# dynamically computer ELO RANGE
-	# ------------------------------
+	# dynamically compute Elo RANGE
+	# -----------------------------
 	set lst {}
 
 	foreach {name v} [array get act] {
@@ -1358,7 +1358,7 @@ proc  schedule_games {} {
 	    set RANGE $max_interval
 	}
 
-	log "ELO permutation factor to be used: $RANGE"
+	log "Elo permutation factor to be used: $RANGE"
 
 
 	# now permute the players up to RANGE amount

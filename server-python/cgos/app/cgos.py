@@ -1822,8 +1822,8 @@ def match_games(ctme: datetime.datetime) -> None:
 
     RANGE = 500.0  # minmum elo range allowed
 
-    # dynamically computer ELO RANGE
-    # ------------------------------
+    # dynamically compute Elo RANGE
+    # -----------------------------
     lst: List[Tuple[str, float]] = []
     r_sum = 0.0
 
@@ -1868,7 +1868,7 @@ def match_games(ctme: datetime.datetime) -> None:
     if max_interval > RANGE:
         RANGE = max_interval
 
-    logger.info(f"ELO permutation factor to be used: {RANGE}")
+    logger.info(f"Elo permutation factor to be used: {RANGE}")
 
     # now permute the players up to RANGE amount
     # ------------------------------------------
