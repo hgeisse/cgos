@@ -2017,15 +2017,13 @@ def runServer() -> None:
     workdir = os.path.dirname(cfg.web_data_file)
     logger.info(f"datafile:'{cfg.web_data_file}' -> workdir:'{workdir}'")
 
-    # make GameDir directory if it doesn't exist
-    # -------------------------------------------
+    # make htmlDir directory if it doesn't exist
+    # ------------------------------------------
     try:
-        os.makedirs(cfg.sgfDir, exist_ok=True)
+        os.makedirs(cfg.htmlDir, exist_ok=True)
     except:
-        logger.error(f"error making sgfDir: {cfg.sgfDir}")
+        logger.error(f"error making htmlDir: {cfg.htmlDir}")
         sys.exit(1)
-
-    os.makedirs(cfg.htmlDir, exist_ok=True)
 
     # make database directory
     def create_parent_dir(file: str) -> None:
