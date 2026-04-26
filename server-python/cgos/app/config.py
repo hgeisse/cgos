@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2009 Don Dailey and Jason House
 # Copyright (c) 2022 Kensuke Matsuzaki
+# Copyright (c) 2026 Hellwig Geisse
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +24,14 @@
 
 import configparser
 import sys
+import os
 from enum import Enum
 from typing import Optional
 
 from gogame import KoRule
 from util.logutils import getLogger
+from util.logutils import config_basic_logging
+from util.logutils import config_file_logging
 
 # Setup logger
 logger = getLogger("cgos_server.client")
@@ -47,6 +51,8 @@ class Configs:
     level: int
     portNumber: int
     timeGift: float
+    logging_directory: str
+    logging_filename: str
     database_state_file: str
     game_archive_database: Optional[str]
     web_data_file: str
@@ -69,6 +75,10 @@ class Configs:
     matchMode: MatchMode
 
     def load(self, path: str) -> None:
+        # install basic logging
+        config_basic_logging('log.yaml')
+
+        # read CGOS configuration
         config = configparser.ConfigParser()
         with open(path) as f:
             try:
@@ -77,6 +87,16 @@ class Configs:
             except Exception as e:
                 logger.error("Error reading config file", e, str(e))
                 sys.exit(0)
+
+        # create logging directory and configure logging to a file
+        self.logging_directory = str(cfg["logging_directory"])
+        self.logging_filename = str(cfg["logging_filename"])
+        try:
+            os.makedirs(self.logging_directory, exist_ok=True)
+        except Exception as e:
+            logger.error("Error creating logging directory", e, str(e))
+            sys.exit(0)
+        config_file_logging(self.logging_directory, self.logging_filename)
 
         self.serverName = str(cfg["serverName"])
         self.portNumber = int(cfg["portNumber"])
