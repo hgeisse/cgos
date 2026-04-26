@@ -1,6 +1,7 @@
 # The MIT License
 #
 # Copyright (c) 2023 Kensuke Matsuzaki
+# Copyright (c) 2026 Hellwig Geisse
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +21,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 import logging
 import logging.config
+import yaml
+import os
 
-logging.config.fileConfig("log.ini")
+
+def config_basic_logging(config_file):
+    with open(config_file, 'r') as f:
+        config = yaml.safe_load(f)
+    logging.config.dictConfig(config)
+
+
+def config_file_logging(log_dir, log_name):
+    rootLogger = logging.getLogger()
+    format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    simpleFormatter = logging.Formatter(fmt=format)
+    log_path = os.path.join(log_dir, log_name)
+    fileHandler = logging.handlers.RotatingFileHandler(
+        log_path,
+        mode='a',
+        maxBytes=10000,
+        backupCount=3,
+    )
+    fileHandler.setLevel(logging.DEBUG)
+    fileHandler.setFormatter(simpleFormatter)
+    rootLogger.addHandler(fileHandler)
 
 
 def getLogger(name: str) -> logging.Logger:
