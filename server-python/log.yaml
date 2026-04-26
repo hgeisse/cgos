@@ -1,0 +1,33 @@
+#
+# basic logging configuration
+#
+
+version: 1
+
+disable_existing_loggers: False
+
+formatters:
+  simpleFormatter:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+handlers:
+  consoleHandler:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simpleFormatter
+    stream: ext://sys.stdout
+  # the fileHandler will be constructed later, on the fly
+  # (because of a dynamically computed path to the logfiles)
+  # fileHandler:
+  #   class: logging.handlers.RotatingFileHandler
+  #   level: DEBUG
+  #   formatter: simpleFormatter
+  #   filename: <computed later>
+
+loggers:
+  root:
+    level: DEBUG
+    handlers:
+      - consoleHandler
+      # the fileHandler will be added later, on the fly (see above)
+      # - fileHandler
