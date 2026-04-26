@@ -28,28 +28,23 @@ to client browsers. In my case (Ubuntu 24.04), the web server is Apache2,
 configured to use /var/www/html as base directory. Thus, <server-html>
 is /var/www/html/cgos on the machine running the server.
 
-5. Create a few directories and an empty database
-mkdir logs
-mkdir -p <server-data>/19x19
-touch <server-data>/19x19/archive.db
-
-6. Copy the directory tree used for representation of results
+5. Copy the directory tree used for presentation of results
 mkdir -p <server-html>
 cp -rp cgos/webuild_html/* <server-html>
 
-7. Start the Go server
+6. Start the Go server
 python cgos/server.py cgos19.cfg &
 
-8. Start the webpage builder
+7. Start the webpage builder
 python cgos/webuild.py cgos19.cfg &
 Note: You should wait with this until the first match at least has
 begun, otherwise the start will fail and you have to restart later.
 
-9. Stop the Go server
+8. Stop the Go server
 touch <server-code>/kill_cgos19
 The kill file is automatically deleted when the server is started again.
 
-10. Stop the webpage builder
+9. Stop the webpage builder
 touch <server-code>/kill_webuild
 The kill file is automatically deleted when the builder is started again.
 
