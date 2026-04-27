@@ -76,7 +76,7 @@ class Configs:
 
     def load(self, path: str) -> None:
         # install basic logging
-        config_basic_logging('log.yaml')
+        config_basic_logging('configs/logging/log.yaml')
 
         # read CGOS configuration
         config = configparser.ConfigParser()
