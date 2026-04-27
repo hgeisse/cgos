@@ -376,7 +376,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 else:
     cfg = Configs()
-    cfg.load(sys.argv[1])
+    cfg.load(sys.argv[1], enable_file_logging=False)
 
 
 # set up a long timeout for transactions

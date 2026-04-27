@@ -33,6 +33,7 @@ from util.logutils import getLogger
 from util.logutils import config_basic_logging
 from util.logutils import config_file_logging
 
+
 # Setup logger
 logger = getLogger("cgos_server.client")
 
@@ -74,8 +75,8 @@ class Configs:
     hashPassword: bool
     matchMode: MatchMode
 
-    def load(self, path: str) -> None:
-        # install basic logging
+    def load(self, path: str, enable_file_logging: bool) -> None:
+        # install basic logging in any case
         config_basic_logging('configs/logging/log.yaml')
 
         # read CGOS configuration
@@ -88,15 +89,17 @@ class Configs:
                 logger.error("Error reading config file", e, str(e))
                 sys.exit(0)
 
-        # create logging directory and configure logging to a file
-        self.logging_directory = str(cfg["logging_directory"])
-        self.logging_filename = str(cfg["logging_filename"])
-        try:
-            os.makedirs(self.logging_directory, exist_ok=True)
-        except Exception as e:
-            logger.error("Error creating logging directory", e, str(e))
-            sys.exit(0)
-        config_file_logging(self.logging_directory, self.logging_filename)
+        # if file logging is enabled, install it
+        if enable_file_logging:
+            # create logging directory and configure logging to a file
+            self.logging_directory = str(cfg["logging_directory"])
+            self.logging_filename = str(cfg["logging_filename"])
+            try:
+                os.makedirs(self.logging_directory, exist_ok=True)
+            except Exception as e:
+                logger.error("Error creating logging directory", e, str(e))
+                sys.exit(0)
+            config_file_logging(self.logging_directory, self.logging_filename)
 
         self.serverName = str(cfg["serverName"])
         self.portNumber = int(cfg["portNumber"])
