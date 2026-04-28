@@ -27,6 +27,7 @@ import datetime
 import os
 import re
 import sqlite3
+import shutil
 import sys
 import time
 from typing import Any, Dict, List
@@ -391,6 +392,7 @@ def main():
     global tmpfile
     global pageName
 
+    # load configuration, disable file logging
     if len(sys.argv) < 2:
         print("Must specify a configuration file.")
         sys.exit(1)
@@ -398,12 +400,22 @@ def main():
         cfg = Configs()
         cfg.load(sys.argv[1], enable_file_logging=False)
 
+    # make sure parent directory of cfg.htmlDir exists
+    parent = os.path.dirname(cfg.htmlDir)
+    if not os.path.exists(parent):
+        # create path to parent directory
+        os.makedirs(parent, exist_ok=True)
+    # copy static web content to parent directory of cfg.htmlDir
+    shutil.copytree('cgos/webuild_html', parent, dirs_exist_ok=True)
+    # make sure cfg.htmlDir exists
+    if not os.path.exists(cfg.htmlDir):
+        os.makedirs(cfg.htmlDir, exist_ok=True)
+
     # make sure path to directory of cfg.database_state_file exists
     dir = os.path.dirname(cfg.database_state_file)
     if not os.path.exists(dir):
         # create path to directory
         os.makedirs(dir, exist_ok=True)
-
     # connect to the database, create it if not present
     # set up a very long timeout for transactions
     try:
