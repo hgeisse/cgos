@@ -2,6 +2,7 @@
 #
 # Copyright (C) 2009 Don Dailey and Jason House
 # Copyright (c) 2023 Kensuke Matsuzaki
+# Copyright (c) 2026 Hellwig Geisse
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 import datetime
 import os
 import re
@@ -34,15 +36,13 @@ from app.config import Configs
 from util.timeutils import now_string
 
 
-def log(msg: str) -> None:
-    tme = now_string()
-    print(f"{tme} | {msg}")
-
-
-rating: Dict[str, str] = {}
+cfg: Configs
 db: sqlite3.Connection
-template_loader = jinja2.FileSystemLoader("cgos/webuild_templates")
+tmpfile: str
+pageName: str
+rating: Dict[str, str] = {}
 
+template_loader = jinja2.FileSystemLoader("cgos/webuild_templates")
 standings_template = jinja2.Environment(loader=template_loader).get_template(
     name="standings.jinja.html"
 )
@@ -318,7 +318,7 @@ def buildWebPage() -> None:
         )
 
     # insert games from previous rounds here
-    # ---------------------------------------
+    # --------------------------------------
 
     gms.sort(key=lambda e: -int(e[0]))
     games = []
@@ -371,23 +371,8 @@ def buildWebPage() -> None:
     print("crosstable end...")
 
 
-if len(sys.argv) < 2:
-    print("Must specify a configuration file.")
-    sys.exit(1)
-else:
-    cfg = Configs()
-    cfg.load(sys.argv[1], enable_file_logging=False)
-
-
-# set up a long timeout for transactions
-try:
-    db = sqlite3.connect(cfg.database_state_file, timeout=40000)
-except sqlite3.Error as e:
-    print(f"Error opening {cfg.database_state_file} database.")
-    raise Exception(e)
-
-
 def update_ratings() -> None:
+    global db
     global rating
 
     for nme, rat, k in db.execute("SELECT name, rating, K FROM password"):
@@ -400,32 +385,59 @@ def update_ratings() -> None:
             rating[nme] = f"{rat}?"
 
 
-tmpfile = f"{cfg.htmlDir}/standings.tmp"
-pageName = f"{cfg.htmlDir}/standings.html"
+def main():
+    global cfg
+    global db
+    global tmpfile
+    global pageName
 
-ct = 0.0
-count = 0
+    if len(sys.argv) < 2:
+        print("Must specify a configuration file.")
+        sys.exit(1)
+    else:
+        cfg = Configs()
+        cfg.load(sys.argv[1], enable_file_logging=False)
 
-if os.path.exists(cfg.killFileWeb):
-    # killfile present, delete it
-    os.remove(cfg.killFileWeb)
+    # make sure path to directory of cfg.database_state_file exists
+    dir = os.path.dirname(cfg.database_state_file)
+    if not os.path.exists(dir):
+        # create path to directory
+        os.makedirs(dir, exist_ok=True)
 
-while True:
-    x = os.path.getmtime(cfg.web_data_file)
+    # connect to the database, create it if not present
+    # set up a very long timeout for transactions
+    try:
+        db = sqlite3.connect(cfg.database_state_file, timeout=12*60*60)
+    except sqlite3.Error as e:
+        print(f"Error opening {cfg.database_state_file} database.")
+        raise Exception(e)
 
-    # print(cfg.web_data_file)
-
-    if x != ct:
-        count += 1
-        # puts "$count) File changed!"
-
-        update_ratings()
-        buildWebPage()
-
-        ct = x
-
-    time.sleep(28000 / 1000)
+    tmpfile = f"{cfg.htmlDir}/standings.tmp"
+    pageName = f"{cfg.htmlDir}/standings.html"
 
     if os.path.exists(cfg.killFileWeb):
-        # killfile present, stop
-        break
+        # killfile present, delete it
+        os.remove(cfg.killFileWeb)
+
+    ct = 0.0
+    while True:
+        if os.path.exists(cfg.web_data_file):
+            x = os.path.getmtime(cfg.web_data_file)
+            if x != ct:
+                update_ratings()
+                buildWebPage()
+                ct = x
+
+        time.sleep(28000 / 1000)
+
+        if os.path.exists(cfg.killFileWeb):
+            # killfile present, stop
+            break
+
+    if os.path.exists(cfg.killFileWeb):
+        # killfile present, delete it
+        os.remove(cfg.killFileWeb)
+
+
+if __name__ == '__main__':
+    main()
