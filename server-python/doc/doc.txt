@@ -9,11 +9,50 @@ code base, but several data and html directories are specific to a board
 size, which must be specified in the corresponding configuration file.
 
 
-2. The server maintains two SQLite databases:
+2. There is a program called "webbuild" which is responsible for
+generating the web pages. All of them or only for a specific board
+size? When starting webbuild one has to specify a config file - the
+exact same config file which is used for starting the server for that
+board size. Therefore webbuild has only access to the configuration
+data of a server for a specific board size and thus can only act for
+this server. Consequently, there must be a separate webuild running
+for each board size.
+
+
+3. After running the server, the webpage builder, and two clients (so
+that games could have been played), several files have been generated.
+A major question is: what is each file used for and what internal
+structure does it have? I'll first try to list them here:
+
+In <server-code>:
+    Here are no new files generated. If any killfile is copied from
+    killfiles/*, that should automatically be deleted, either when
+    the respective program is killed or at least when it is restarted.
+
+In <server-data>: one subdirectory per board size, e.g. 19x19, containing:
+    archive.db      database, 1 table, see below
+    state.db        database, 5 tables, see below
+    wdata.txt       ??? (same contents as wdata in <server-html>)
+    logs            a subdirectory with rotating logfiles
+                    (number and size of the logs are set in logutils.py)
+
+In <server-html> we have the static html content:
+    index.html      the typical html root
+    cgosLogo.png    CGOS logo, freely usable
+There is also one subdirectory per board size, e.g. 19x19, containing:
+    standings.html  displays rating of paticipants, recent games
+    wdata.txt       ??? (same contents as wdata in <server-data>)
+    SGF             a directory tree with game records, ordered by date,
+                    in standard (gzip-compressed) SGF
+    cross           a subdirectory with cross-tables of results of games
+                    against opponents, one for each participant
+
+
+4. The server maintains two SQLite databases:
     - archive.db stores the game archive
     - state.db stores the state of the server
 
-2.1 archive.db
+4.1 archive.db
     This database consists of a single table ("games").
 
     "games"        has columns: gid, see, see2
@@ -21,7 +60,7 @@ size, which must be specified in the corresponding configuration file.
         see
         see2
 
-2.2 state.db
+4.2 state.db
     This database consists of 5 tables ("anchors", "clients", "gameid",
     "games", "password").
 
