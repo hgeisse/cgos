@@ -50,6 +50,9 @@ standings_template = jinja2.Environment(loader=template_loader).get_template(
 crosstable_template = jinja2.Environment(loader=template_loader).get_template(
     name="crosstable.jinja.html"
 )
+archive_template = jinja2.Environment(loader=template_loader).get_template(
+    name="archive.jinja.html"
+)
 
 
 def formatSgfPath(dte: str, gid: str) -> str:
@@ -57,7 +60,7 @@ def formatSgfPath(dte: str, gid: str) -> str:
 
 
 # @profile
-def crosstable(who: str) -> None:
+def build_crosstable(who: str) -> None:
 
     global rating
 
@@ -196,7 +199,7 @@ def crosstable(who: str) -> None:
 
 
 # @profile
-def buildWebPage() -> None:
+def build_standings() -> None:
     global tmpfile
     global pageName
     global rating
@@ -367,9 +370,22 @@ def buildWebPage() -> None:
 
     for n in bcr.keys():
         print(f"ready crosstable {n}")
-        crosstable(n)
+        build_crosstable(n)
 
     print("crosstable end...")
+
+
+# @profile
+def build_archive():
+    archive_name = "archive.html"
+    print(f"trying to open and write {cfg.htmlDir}/{archive_name}")
+    data = {
+        "cfg": cfg,
+    }
+    result = archive_template.render(data)
+    with open(f"{cfg.htmlDir}/{archive_name}", "w") as f:
+        f.write(result)
+    print(f"written {cfg.htmlDir}/{archive_name}")
 
 
 def update_ratings() -> None:
@@ -437,7 +453,8 @@ def main():
             x = os.path.getmtime(cfg.web_data_file)
             if x != ct:
                 update_ratings()
-                buildWebPage()
+                build_standings()
+                build_archive()
                 ct = x
 
         time.sleep(28000 / 1000)
