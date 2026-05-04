@@ -17,34 +17,36 @@ cd <server-code>
 pip install -r requirements.txt
 
 4. Configure cgos19.cfg
-You have to decide where on the server the data of the running server
-should be written. I will refer to this directory as <server-data>.
-You must as well decide where on the server the web pages of the server
-should be stored. I will refer to this directory as <server-html>.
-Edit cgos19.cfg and replace all occurrences of <server-data> with
-your (absolute) path. Do the same with <server-html>.
-Note: <server-html> should be a directory that your web server presents
-to client browsers. In my case (Ubuntu 24.04), the web server is Apache2,
-configured to use /var/www/html as base directory. Thus, <server-html>
-is /var/www/html/cgos on the machine running the server.
+You have to decide where on the server the data of the running
+program should be written. I will refer to this directory as
+<server-data>.
+You must as well decide where on the server the web pages of
+the server should be stored. I will refer to this directory as
+<server-html>.
+Edit configs/generic/cgos19.cfg and replace all occurrences of
+<server-data> with your (absolute) path for <server-data>. Do
+the same with <server-html>.
+Note: <server-html> should be a directory that your web server
+presents to client browsers. In my case (Ubuntu 24.04), the web
+server is Apache2, configured to use /var/www/html as base
+directory. Thus, <server-html> is /var/www/html/cgos on the
+machine running the server.
 
-5. Copy the directory tree used for presentation of results
-mkdir -p <server-html>
-cp -rp cgos/webuild_html/* <server-html>
+5. Start the Go server
+python cgos/server.py <path_to_your_config_file> &
+Note: In my case, the config file is configs/local-hg/cgos19.cfg
 
-6. Start the Go server
-python cgos/server.py cgos19.cfg &
+6. Start the webpage builder
+python cgos/webuild.py <path_to_your_config_file> &
+Note: The config file here is the exact same file as in 5. above.
 
-7. Start the webpage builder
-python cgos/webuild.py cgos19.cfg &
-Note: You should wait with this until the first match at least has
-begun, otherwise the start will fail and you have to restart later.
+7. Stop the Go server
+cp killfiles/kill_cgos19 <server-code>
+The contents of the killfile are ignored, only its presence counts.
+It is automatically deleted when the server is started again.
 
-8. Stop the Go server
-touch <server-code>/kill_cgos19
-The kill file is automatically deleted when the server is started again.
-
-9. Stop the webpage builder
-touch <server-code>/kill_webuild
-The kill file is automatically deleted when the builder is started again.
+8. Stop the webpage builder
+cp killfiles/kill_webuild19 <server-code>
+The contents of the killfile are ignored, only its presence counts.
+It is automatically deleted when the builder is started again.
 
