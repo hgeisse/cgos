@@ -1659,6 +1659,8 @@ def schedule_games() -> None:
                 dbrec.close()
 
             logger.info("KILL FILE FOUND - EXIT CGOS")
+            if os.path.exists(cfg.killFileSrv):
+                os.remove(cfg.killFileSrv)
             sys.exit(0)
 
         if cfg.matchMode == MatchMode.AUTO:
