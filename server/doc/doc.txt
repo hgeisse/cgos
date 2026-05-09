@@ -94,3 +94,40 @@ There is also one subdirectory per board size, e.g. 19x19, containing:
         rating
         K
         last_game
+
+
+5. Concurrent computations in the server
+
+5.1 Processes, threads, asyncIO
+    Processes are not used at all.
+    Threads are not used at all.
+    AsyncIO is used in
+      - cgos/app/cgos.py
+      - cgos/app/client.py
+
+5.2 Concurrency in client.py
+
+5.2.1 Tasks created in client.py
+      none
+
+5.2.2 Async function defs in client.py
+      async def readLine(self)                -> str
+      async def writeTask(self)               -> None
+      async def readTask(self)                -> None
+
+5.3 Concurrency in client.py
+
+5.3.1 Tasks created in cgos.py
+      handleTask = create_task(handle_client(client))
+      task       = create_task(schedule_games_task())
+      readTask   = create_task(client.readTask())
+      writeTask  = create_task(client.writeTask())
+
+5.3.2 Async function defs in cgos.py
+      async def accept_connection(
+          reader: asyncio.StreamReader,
+          writer: asyncio.StreamWriter
+      )                                       -> None
+      async def handle_client(client: Client) -> None
+      async def schedule_games_task()         -> None
+      async def server_main()                 -> None
