@@ -152,4 +152,3 @@ class Configs:
             except:
                 logger.error(f"Bad match mode {cfg['matchMode']}")
                 sys.exit(1)
-        logger.info(f"Match mode {self.matchMode}")
