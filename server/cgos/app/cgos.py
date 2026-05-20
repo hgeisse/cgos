@@ -1870,7 +1870,7 @@ def match_games(ctme: datetime.datetime) -> None:
     if max_interval > RANGE:
         RANGE = max_interval
 
-    logger.info(f"Elo permutation factor to be used: {RANGE}")
+    logger.info(f"Elo permutation factor: {RANGE}")
 
     # now permute the players up to RANGE amount
     # ------------------------------------------
