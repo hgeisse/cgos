@@ -45,7 +45,7 @@ def config_file_logging(log_dir, log_name):
         maxBytes=10000,
         backupCount=3,
     )
-    fileHandler.setLevel(logging.DEBUG)
+    fileHandler.setLevel(logging.INFO)
     fileHandler.setFormatter(simpleFormatter)
     rootLogger.addHandler(fileHandler)
 

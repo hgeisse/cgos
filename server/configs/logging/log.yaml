@@ -13,14 +13,14 @@ formatters:
 handlers:
   consoleHandler:
     class: logging.StreamHandler
-    level: DEBUG
+    level: WARNING
     formatter: simpleFormatter
     stream: ext://sys.stdout
   # the fileHandler will be constructed later, on the fly
   # (because of a dynamically computed path to the logfiles)
   # fileHandler:
   #   class: logging.handlers.RotatingFileHandler
-  #   level: DEBUG
+  #   level: INFO
   #   formatter: simpleFormatter
   #   filename: <computed later>
 
