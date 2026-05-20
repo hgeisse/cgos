@@ -190,7 +190,7 @@ def build_crosstable(who: str) -> None:
         "listgamesort": games,
     }
 
-    print(f"trying to open and write: {cfg.htmlDir}/cross/{who}.html")
+    #print(f"trying to open and write: {cfg.htmlDir}/cross/{who}.html")
     os.makedirs(f"{cfg.htmlDir}/cross/", exist_ok=True)
 
     result = crosstable_template.render(data)
@@ -369,23 +369,22 @@ def build_standings() -> None:
     os.replace(tmpfile, pageName)
 
     for n in bcr.keys():
-        print(f"ready crosstable {n}")
+        #print(f"ready crosstable {n}")
         build_crosstable(n)
-
-    print("crosstable end...")
+    #print("crosstable end...")
 
 
 # @profile
 def build_archive():
     archive_name = "archive.html"
-    print(f"trying to open and write {cfg.htmlDir}/{archive_name}")
+    #print(f"trying to open and write {cfg.htmlDir}/{archive_name}")
     data = {
         "cfg": cfg,
     }
     result = archive_template.render(data)
     with open(f"{cfg.htmlDir}/{archive_name}", "w") as f:
         f.write(result)
-    print(f"written {cfg.htmlDir}/{archive_name}")
+    #print(f"written {cfg.htmlDir}/{archive_name}")
 
 
 def update_ratings() -> None:
