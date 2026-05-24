@@ -1,0 +1,36 @@
+#
+# simple.yaml -- client configuration example
+#
+
+
+Common:
+  # Kill file to stop the client (required)
+  KillFile: "kill_client"
+
+  # Log file for communication with the server (optional)
+  LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # First (and only) engine
+    # Name and invocation of this engine (required)
+    EngineName: "Gnugo Level 8"
+    CommandLine: >
+      gnugo --mode gtp --score aftermath --capture-all-dead
+      --chinese-rules --level 8
+
+    # Server connection (required)
+    ServerHost: "yss-aya.com"
+    ServerPort: 6819
+    ServerUser: "myuser"
+    ServerPassword: "mypw"
+
+    # Play this many games before switching to next engine (optional)
+    # Note: this is ignored if there is only a single engine
+    NumberOfGames: 5
+
+    # Directory to save SGF (optional)
+    SGFDirectory: "sgf/engine1"
+
+    # Log file for this engine (optional)
+    EngineLogFile: "logs/engine1.log"

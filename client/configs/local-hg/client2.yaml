@@ -1,0 +1,23 @@
+#
+# client2.yaml -- CGOS client config for Pachi 12.86
+#
+
+
+Common:
+  KillFile: "kill_client"
+  #LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # Engine 1
+    EngineName: "Pachi 12.86"
+    CommandLine: >
+      /home/hellwig/Go/pachi/Pachi-12.86/pachi -D -o pachi.log
+
+    ServerHost: "localhost"
+    ServerPort: 6819
+    ServerUser: "hg-pachi"
+    ServerPassword: "geheim4321"
+
+    #SGFDirectory: "sgf/engine1"
+    #EngineLogFile: "logs/engine1.log"

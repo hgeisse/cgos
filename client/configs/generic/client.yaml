@@ -1,0 +1,40 @@
+#
+# client.yaml -- generic client configuration
+#
+
+
+Common:
+  # Kill file to stop the client (required)
+  KillFile: "kill_client"
+
+  # Log file for communication with the server (optional)
+  LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # First engine
+    # Name and invocation of this engine (required)
+    EngineName: "<name-of-engine>"
+    CommandLine: "<command-line>"
+
+    # Server connection (required)
+    ServerHost: "<server-host>"
+    ServerPort: <one of 6819, 6813, 6809>
+    ServerUser: "<server-user>"
+    ServerPassword: "<server-password>"
+
+    # Play this many games before switching to next engine (optional)
+    # Note: this is ignored if there is only a single engine
+    NumberOfGames: 5
+
+    # Wait for this many seconds before sending a generated move (optional)
+    GenmoveDelay: 2
+
+    # Directory to save SGF (optional)
+    SGFDirectory: "sgf/engine1"
+
+    # Log file for this engine (optional)
+    EngineLogFile: "logs/engine1.log"
+
+  # More engines may be specified here, following the template given above.
+  # Note the leading hyphen: this signals the start of another list entry.

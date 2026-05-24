@@ -1,0 +1,23 @@
+#
+# client4.yaml -- CGOS client config for randomGo 0.0
+#
+
+
+Common:
+  KillFile: "kill_client"
+  #LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # Engine 1
+    EngineName: "RandomGo 0.0"
+    CommandLine: >
+      /home/hellwig/Go/randomGo/run/randomGo/randomGo
+
+    ServerHost: "localhost"
+    ServerPort: 6819
+    ServerUser: "hg-randomgo"
+    ServerPassword: "geheim2143"
+
+    #SGFDirectory: "sgf/engine1"
+    #EngineLogFile: "logs/engine1.log"

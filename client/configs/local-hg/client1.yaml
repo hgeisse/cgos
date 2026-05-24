@@ -1,0 +1,25 @@
+#
+# client1.yaml -- CGOS client config for Gnugo Level 10
+#
+
+
+Common:
+  KillFile: "kill_client"
+  #LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # Engine 1
+    EngineName: "Gnugo Level 10"
+    CommandLine: >
+      /home/hellwig/Go/gnugo/corrected/gnugo-3.8/interface/gnugo
+      --mode gtp --score aftermath --capture-all-dead --chinese-rules
+      --level 10
+
+    ServerHost: "localhost"
+    ServerPort: 6819
+    ServerUser: "hg-gnugo"
+    ServerPassword: "geheim1234"
+
+    #SGFDirectory: "sgf/engine1"
+    #EngineLogFile: "logs/engine1.log"

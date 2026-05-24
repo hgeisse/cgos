@@ -1,0 +1,50 @@
+#
+# test.yaml -- client configuration example
+#
+
+
+Common:
+  KillFile: "kill_client"
+  LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # First engine
+    # Name and invocation of this engine
+    EngineName: "Gnugo Level 8"
+    CommandLine: >
+      /home/hellwig/Go/gnugo/corrected/gnugo-3.8/interface/gnugo
+      --mode gtp --score aftermath --capture-all-dead --chinese-rules
+      --level 8
+    # Server connection
+    #ServerHost: "localhost"
+    #ServerPort: 6809
+    ServerUser: "hellwig"
+    ServerPassword: "Geheim"
+    # Play this many games before switching to next engine
+    NumberOfGames: 5
+    # Wait for this many seconds before sending a generated move
+    GenmoveDelay: 10
+    # Data storage
+    SGFDirectory: "sgf/engine1"
+    EngineLogFile: "logs/engine1.log"
+
+  - # Second engine
+    # Name and invocation of this engine
+    EngineName: "Gnugo Level 10"
+    CommandLine: >
+      /home/hellwig/Go/gnugo/corrected/gnugo-3.8/interface/gnugo
+      --mode gtp --score aftermath --capture-all-dead --chinese-rules
+      --level 10
+    # Server connection
+    ServerHost: "localhost"
+    ServerPort: 6809
+    ServerUser: "tristan"
+    ServerPassword: "ganz-geheim"
+    # Play this many games before switching to next engine
+    NumberOfGames: 5
+    # Wait for this many seconds before sending a generated move
+    GenmoveDelay: 0
+    # Data storage
+    SGFDirectory: "sgf/engine2"
+    EngineLogFile: "logs/engine2.log"

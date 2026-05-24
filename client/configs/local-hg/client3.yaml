@@ -1,0 +1,23 @@
+#
+# client3.yaml -- CGOS client config for Brown 1.0
+#
+
+
+Common:
+  KillFile: "kill_client"
+  #LogFile: "logs/cgos.log"
+
+
+Engines:
+  - # Engine 1
+    EngineName: "Brown 1.0"
+    CommandLine: >
+      /home/hellwig/Go/brown/run/brown-1.0/brown
+
+    ServerHost: "localhost"
+    ServerPort: 6819
+    ServerUser: "hg-brown"
+    ServerPassword: "geheim3412"
+
+    #SGFDirectory: "sgf/engine1"
+    #EngineLogFile: "logs/engine1.log"

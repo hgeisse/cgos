@@ -1,0 +1,11 @@
+#
+# test.yaml -- client configuration example
+#
+
+
+Common:
+  KillFile: "kill_client"
+  LogFile: "logs/cgos.log"
+
+
+Engines: []

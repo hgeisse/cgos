@@ -27,11 +27,11 @@ import os.path
 import string
 import random
 import io
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from gtpengine import EngineConnector, EngineConnectorError, GTPTools
 from sgf import SGFGame, SGFMove
-from config import ConfigFile, ConfigSection
+from config import load_config
 
 
 ENCODING = "utf-8"
@@ -61,7 +61,7 @@ class CGOSClient(object):
     __TIME_CHECKPOINT_FREQUENCY = 60 * 30
     """ How often to output stats, etc., in seconds """
 
-    def __init__(self, engineConfigurationSections: List[ConfigSection],
+    def __init__(self, engineConfigurationSections: List[Dict],
                  killFileName: str = "kill_client",
                  logFileName: Optional[str] = None) -> None:
         """
@@ -667,22 +667,26 @@ class CGOSClient(object):
             self._engine.shutdown()
 
         newEngineConfig = self._engineConfigs[self._currentEngineIndex]
-        self._currentEngineGamesLeft = int(newEngineConfig.getValue("NumberOfGames"))
+        numGames = newEngineConfig["NumberOfGames"]
+        if numGames is None:
+            self._currentEngineGamesLeft = 1
+        else:
+            self._currentEngineGamesLeft = int(numGames)
 
         self.logger.info(
             "Chose engine "
             + str(self._currentEngineIndex + 1)
             + ' ("'
-            + newEngineConfig.getValue("Name")
+            + newEngineConfig["EngineName"]
             + '") as next player. Switching and re-connecting.'
         )
 
         try:
             newEngine = EngineConnector(
-                newEngineConfig.getValue("CommandLine"),
-                newEngineConfig.getValue("Name"),
+                newEngineConfig["CommandLine"],
+                newEngineConfig["EngineName"],
                 logger="EngineConnector" + str(self._currentEngineIndex),
-                logfile=newEngineConfig.getValueOpt("LogFile")
+                logfile=newEngineConfig["EngineLogFile"]
             )
             newEngine.connect()
         except Exception as e:
@@ -691,16 +695,14 @@ class CGOSClient(object):
 
         self._engine = newEngine
 
-        if newEngineConfig.hasValue("SGFDirectory"):
-            self._sgfDirectory = newEngineConfig.getValue("SGFDirectory")
-        else:
-            self._sgfDirectory = None
+        self._sgfDirectory = newEngineConfig["SGFDirectory"]
 
-        self._server = newEngineConfig.getValue("ServerHost")
-        self._port = int(newEngineConfig.getValue("ServerPort"))
-        self._username = newEngineConfig.getValue("ServerUser")
-        self._password = newEngineConfig.getValue("ServerPassword")
-        delay = newEngineConfig.getValueOpt("GenmoveDelay")
+        self._server = newEngineConfig["ServerHost"]
+        self._port = int(newEngineConfig["ServerPort"])
+        self._username = newEngineConfig["ServerUser"]
+        self._password = newEngineConfig["ServerPassword"]
+
+        delay = newEngineConfig["GenmoveDelay"]
         if delay is None:
             self._genmoveDelay = -1
         else:
@@ -727,33 +729,36 @@ class CGOSClient(object):
 
 
 def main(argv: List[str]) -> bool:
-    print("Python CGOS client. " + CGOSClient.CLIENT_ID + " (c)2009 Christian Nentwich")
+    print(f"Python CGOS client, ID = '{CGOSClient.CLIENT_ID}'")
+    print(f"  (c) 2009 Christian Nentwich")
+    print(f"  (c) 2023 Kensuke Matsuzaki")
+    print(f"  (c) 2026 Hellwig Geisse")
     if len(argv) != 1:
         print("Usage: python cgosclient.py config.cfg")
         return True
 
     # Here we go. Grab the configuration file
-    config = ConfigFile()
-    config.load(argv[0])
+    config = load_config(argv[0])
 
-    engineConfigs = config.getEngineSections()
+    engineConfigs = config["Engines"]
+    commonConfig = config["Common"]
     client = CGOSClient(engineConfigs,
-                        config.getCommonSection().getValue("KillFile"),
-                        config.getCommonSection().getValueOpt("LogFile"))
+                        commonConfig["KillFile"],
+                        commonConfig["LogFile"])
 
-    # Launch observer (e.g. GoGUI) if any
-    observerConfig = config.getObserverSection()
-    observerEngine = None
+#    # Launch observer (e.g. GoGUI) if any
+#    observerConfig = config.getObserverSection()
+#    observerEngine = None
 
-    if observerConfig is not None:
-        observerEngine = EngineConnector(
-            observerConfig.getValue("CommandLine"),
-            "Observer",
-            logger="ObserverLogger",
-            logfile=observerConfig.getValueOpt("LogFile")
-        )
-        observerEngine.connect(EngineConnector.MANDATORY_OBSERVE_COMMANDS)
-        client.setObserver(observerEngine)
+#    if observerConfig is not None:
+#        observerEngine = EngineConnector(
+#            observerConfig["CommandLine"],
+#            "Observer",
+#            logger="ObserverLogger",
+#            logfile=observerConfig.getValueOpt("LogFile")
+#        )
+#        observerEngine.connect(EngineConnector.MANDATORY_OBSERVE_COMMANDS)
+#        client.setObserver(observerEngine)
 
     # And play until done
     try:
@@ -761,21 +766,18 @@ def main(argv: List[str]) -> bool:
         return client.mainloop()
     finally:
         client.shutdown()
-        if observerEngine is not None:
-            observerEngine.shutdown()
+#        if observerEngine is not None:
+#            observerEngine.shutdown()
 
 
 if __name__ == "__main__":
-    while True:
-        try:
-            expected = main(sys.argv[1:])
-            if expected:
-                print("Graceful shutdown")
-                break
-            else:
-                print("Error happened.")
-        except KeyboardInterrupt:
-            print("Exit by KeyboardInterrupt")
-            break
-        except Exception as e:
-            traceback.print_exc(file=sys.stderr)
+    try:
+        expected = main(sys.argv[1:])
+        if expected:
+            print("Graceful shutdown")
+        else:
+            print("Error, terminating")
+    except KeyboardInterrupt:
+        print("Exit by KeyboardInterrupt")
+    except Exception as e:
+        traceback.print_exc(file=sys.stderr)
