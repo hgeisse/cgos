@@ -70,7 +70,7 @@ def build_crosstable(who: str) -> None:
     wins: Dict[str, int] = {}
     draws: Dict[str, int] = {}
 
-    print(f"building for {who}")
+    #print(f"building for {who}")
 
     with db:
         wgms = db.execute(
