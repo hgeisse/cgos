@@ -18,7 +18,7 @@ on the machine the server should run on. I will refer to this directory
 as <server-code>. Copy all files and subdirectories from the main server
 directory to <server-code>:
 cp -rp server/* <server-code>
-Then please follow the HOWTO in <server-code>.
+Then please follow the README in <server-code>.
 
 If you are interested to let your bot play on the CGOS server, create
 a directory on the machine your bot runs on (which may well be the
@@ -26,5 +26,5 @@ same machine the server runs on). I will refer to this directory as
 <client-code>. Copy all files and subdirectories from the main client
 directory to <client-code>:
 cp -rp client/* <client-code>
-Then please follow the HOWTO in <client-code>.
+Then please follow the README in <client-code>.
 
