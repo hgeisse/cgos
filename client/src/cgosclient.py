@@ -734,7 +734,7 @@ def main(argv: List[str]) -> bool:
     print(f"  (c) 2023 Kensuke Matsuzaki")
     print(f"  (c) 2026 Hellwig Geisse")
     if len(argv) != 1:
-        print("Usage: python cgosclient.py config.cfg")
+        print("Usage: python cgosclient.py config.yaml")
         return True
 
     # Here we go. Grab the configuration file
