@@ -696,6 +696,8 @@ class CGOSClient(object):
         self._engine = newEngine
 
         self._sgfDirectory = newEngineConfig["SGFDirectory"]
+        if self._sgfDirectory is not None:
+            os.makedirs(self._sgfDirectory, exist_ok=True)
 
         self._server = newEngineConfig["ServerHost"]
         self._port = int(newEngineConfig["ServerPort"])
@@ -712,10 +714,6 @@ class CGOSClient(object):
 
     def setObserver(self, engine) -> None:
         self._observer = engine
-
-    def setSGFDirectory(self, dir) -> None:
-        self._sgfDirectory = dir
-        self.logger.info("SGF files will be saved in: " + dir)
 
     def shutdown(self) -> None:
         self.logger.info("Shutting down CGOS connection")
