@@ -71,7 +71,7 @@ class Configs:
     leeway: int
     anchor_match_rate: float
     badUsersFile: str
-    moveIntervalBetweenSave: int
+    moves_per_save: int
     hashPassword: bool
     matchMode: MatchMode
 
@@ -139,7 +139,7 @@ class Configs:
         self.killFileWeb = str(cfg["killFileWeb"])
         self.anchor_match_rate = float(cfg.get("anchor_match_rate", "0.10"))
         self.badUsersFile = str(cfg["bad_users_file"])
-        self.moveIntervalBetweenSave = int(cfg["moveIntervalBetweenSave"])
+        self.moves_per_save = int(cfg["moves_per_save"])
         if "hashPassword" in cfg:
             self.hashPassword = cfg.getboolean("hashPassword")
         else:

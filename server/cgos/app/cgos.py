@@ -1139,8 +1139,8 @@ def _handle_player_genmove(sock: Client, data: str) -> None:
     viewers.sendObservers(gid, f"update {gid} {vmsg}")
 
     if (
-        cfg.moveIntervalBetweenSave > 0
-        and len(game.moves) % cfg.moveIntervalBetweenSave == 0
+        cfg.moves_per_save > 0
+        and len(game.moves) % cfg.moves_per_save == 0
     ):
         saveSgf(gid, games[gid], None, "")
 
@@ -1787,7 +1787,7 @@ def init_game(
     vmsg = f"match {gid} - - {cfg.boardsize} {cfg.komi} {wp}({wr}) {bp}({br}) -"
     viewers.sendAll(vmsg)
 
-    if cfg.moveIntervalBetweenSave > 0:
+    if cfg.moves_per_save > 0:
         saveSgf(gid, games[gid], None, "")
 
     logger.info(f"starting {wp} {wr} {bp} {br}")
