@@ -5,7 +5,7 @@
 
 Common:
   KillFile: "kill_client"
-  #LogFile: "logs/cgos.log"
+  LogFile: "logs/cgos.log"
 
 
 Engines:
@@ -21,5 +21,5 @@ Engines:
     ServerUser: "hg-gnugo"
     ServerPassword: "geheim1234"
 
-    #SGFDirectory: "sgf/engine1"
-    #EngineLogFile: "logs/engine1.log"
+    SGFDirectory: "sgf/engine1"
+    EngineLogFile: "logs/engine1.log"
