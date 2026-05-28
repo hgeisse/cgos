@@ -68,7 +68,6 @@ class Configs:
     establishedAge: float
     killFileSrv: str
     killFileWeb: str
-    leeway: int
     anchor_match_rate: float
     badUsersFile: str
     moves_per_save: int
@@ -106,11 +105,11 @@ class Configs:
         self.rule = str(cfg["rule"])
         self.boardsize = int(cfg["boardsize"])
         self.komi = float(cfg["komi"])
-        if "ko" in cfg:
+        if "koRule" in cfg:
             try:
-                self.koRule = KoRule[cfg["ko"]]
+                self.koRule = KoRule[cfg["koRule"]]
             except:
-                logger.error(f"Bad ko rule {cfg['ko']}")
+                logger.error(f'Bad ko rule {cfg["koRule"]}')
                 sys.exit(1)
         else:
             self.koRule = KoRule.POSITIONAL
