@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import configparser
+import yaml
 import sys
 import os
 from enum import Enum
@@ -79,14 +79,8 @@ class Configs:
         config_basic_logging('configs/logging/log.yaml')
 
         # read CGOS configuration
-        config = configparser.ConfigParser()
-        with open(path) as f:
-            try:
-                config.read_file(f)
-                cfg = config["cgos-server"]
-            except Exception as e:
-                logger.error("Error reading config file", e, str(e))
-                sys.exit(0)
+        with open(path, 'r') as f:
+            cfg = yaml.safe_load(f)
 
         # if file logging is enabled, install it
         if enable_file_logging:
@@ -97,7 +91,7 @@ class Configs:
                 os.makedirs(self.logging_directory, exist_ok=True)
             except Exception as e:
                 logger.error("Error creating logging directory", e, str(e))
-                sys.exit(0)
+                sys.exit(1)
             config_file_logging(self.logging_directory, self.logging_filename)
 
         self.serverName = str(cfg["serverName"])
@@ -129,18 +123,21 @@ class Configs:
         self.htmlInfoMsg = str(cfg["htmlInfoMsg"])
         self.sgfDir = str(cfg["sgfDir"])
         if "compressSgf" in cfg:
-            self.compressSgf = cfg.getboolean("compressSgf")
+            self.compressSgf = bool(cfg["compressSgf"])
         else:
             self.compressSgf = False
         self.provisionalAge = float(cfg["provisionalAge"])
         self.establishedAge = float(cfg["establishedAge"])
         self.killFileSrv = str(cfg["killFileSrv"])
         self.killFileWeb = str(cfg["killFileWeb"])
-        self.anchor_match_rate = float(cfg.get("anchor_match_rate", "0.10"))
+        if "anchor_match_rate" in cfg:
+            self.anchor_match_rate = float(cfg["anchor_match_rate"])
+        else:
+            self.anchor_match_rate = 0.10
         self.badUsersFile = str(cfg["bad_users_file"])
         self.moves_per_save = int(cfg["moves_per_save"])
         if "hashPassword" in cfg:
-            self.hashPassword = cfg.getboolean("hashPassword")
+            self.hashPassword = bool(cfg["hashPassword"])
         else:
             self.hashPassword = False
 
