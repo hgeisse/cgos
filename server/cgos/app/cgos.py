@@ -1902,7 +1902,7 @@ def match_games(ctme: datetime.datetime) -> None:
             wp = aa[0]  # actual player names
             bp = bb[0]  # actual player names
 
-            # delte anchor vs anchor
+            # delete anchor vs anchor
             if aa in anchors and bb in anchors:
                 r = random.random()
                 if r > cfg.anchor_match_rate:
