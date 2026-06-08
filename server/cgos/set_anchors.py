@@ -1,5 +1,5 @@
 #
-# set_anchors.py -- nail down the anchor players with their ratings
+# set_anchors.py -- main program to set all anchor players to their ratings
 #
 
 

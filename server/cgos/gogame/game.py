@@ -1,29 +1,12 @@
-# The MIT License
 #
-# Copyright (C) 2009 Don Dailey and Jason House
-# Copyright (c) 2022 Kensuke Matsuzaki
+# game.py -- Go game states, SGF game records
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+
 
 import datetime
 import json
 from typing import List, Optional, Tuple
+
 
 # -----------------------------------------------
 # games - currently active games and their states
@@ -33,10 +16,10 @@ from typing import List, Optional, Tuple
 #  0: white user name
 #  1: black user name
 #  2: last move start time
-#  3: wrt
-#  4: brt
-#  5: wrate
-#  6: brate
+#  3: white remaining time
+#  4: black remaining time
+#  5: white rate
+#  6: black rate
 #  7: list of moves/time pairs
 
 
