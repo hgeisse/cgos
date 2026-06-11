@@ -490,7 +490,7 @@ def saveSgf(gid: int, game: Game, sc: Optional[str], err: str) -> None:
         game=game,
         serverName=cfg.serverName,
         level=cfg.level,
-        rule=cfg.rule,
+        rule="Chinese",
         boardsize=cfg.boardsize,
         komi=cfg.komi,
         gid=gid,
@@ -1660,7 +1660,6 @@ def write_web_data_file(ctme: datetime.datetime) -> None:
     global games
     global last_game_count
     global workdir
-    global leeway
     global last_est
     global gme
     global db

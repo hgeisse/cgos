@@ -2,156 +2,117 @@
 # cgos19.yaml -- CGOS server config for boardsize 19x19
 #
 
-# ???
-# type: str
-# required
+# serverName: descriptive name of server for sgf and html pages
+# type: str, required
 serverName: "(CGOS) 19x19 Computer Go Server"
 
-#!!! TO BE DELETED !!!
-# ???
-# type: str
-# required
-rule: "NONSENSE"
-
-# ???
-# type: int
-# required
+# boardsize: size of the Go board
+# type: int, required
 boardsize: 19
 
-# ???
-# type: float
-# required
+# komi: Komi value
+# type: float, required
 komi: 7.0
 
-# ???
-# type: str
-# optional
-# default: "POSITIONAL"
+# koRule: Ko rule in effect
+# type: str, optional (default: "POSITIONAL")
 # possible values: "SIMPLE", "POSITIONAL"
 koRule: "POSITIONAL"
 
-# ???
-# type: int
-# required
-level: 900
+# level: time limit, in seconds
+# type: int, required
+level: 1200
 
-# ???
-# type: int
-# required
+# portNumber: port number this server is listening on
+# type: int, required
 portNumber: 6819
 
-# ???
-# type: float
-# required
+# timeGift: Fischer timing increment, in seconds
+# type: float, required
 timeGift: 0.25
 
-# ???
-# type: str
+# logging_directory: directory of logging files
+# type: str, required
 logging_directory: "/home/hellwig/Go-Server/cgos-hg/run/server-data/19x19/logs"
 
-# ???
-# type: str
+# logging_filename: base name of logging files
+# type: str, required
 logging_filename: "cgos_server.log"
 
-# ???
-# type: str
-# required
+# database_state_file: ???
+# type: str, required
 database_state_file: "/home/hellwig/Go-Server/cgos-hg/run/server-data/19x19/state.db"
 
-# ???
-# type: str
-# optional
-# default: null
+# game_archive_database: ???
+# type: str, optional (default: null)
 game_archive_database: "/home/hellwig/Go-Server/cgos-hg/run/server-data/19x19/archive.db"
 
-# ???
-# type: str
-# required
+# web_data_file: ???
+# type: str, required
 web_data_file: "/home/hellwig/Go-Server/cgos-hg/run/server-data/19x19/wdata.txt"
 
-# ???
-# type: float
-# required
+# defaultRating: rating a client starts with
+# type: float, required
 defaultRating: 1800.0
 
-# ???
-# type: float
-# required
+# minK: minimum value of the K-factor
+# type: float, required
 minK: 3.0
 
-# ???
-# type: float
-# required
+# maxK: maximum value of the K-factor
+# type: float, required
 maxK: 200.0
 
-# ???
-# type: str
-# required
+# htmlDir: directory for storing WEB pages
+# type: str, required
 htmlDir: "/home/hellwig/Go-Server/cgos-hg/run/server-html/19x19"
 
-# ???
-# type: str
-# required
+# htmlInfoMsg: ???
+# type: str, required
 htmlInfoMsg: "Boardsize 19x19 - 20 minutes per side"
 
-# ???
-# type: str
-# required
+# sgfDir: ???
+# type: str, required
 sgfDir: "SGF"
 
-# ???
-# type: bool
-# optional
-# default: false
+# compressSgf: should the SGF records be compressed?
+# type: bool, optional (default: false)
 compressSgf: true
 
-# ???
-# type: float
-# required
+# provisionalAge: days an entry will stay on WEB page if no games played
+# type: float, required
 provisionalAge: 0.04
 
-# ???
-# type: float
-# required
+# establishedAge: days an entry will stay on WEB page if no games played
+# type: float, required
 establishedAge: 31.0
 
-# ???
-# type: str
-# required
+# killFileSrv: existence of this file stops scheduling games and
+#              shuts down the server after all games are completed
+# type: str, required
 killFileSrv: "/home/hellwig/Go-Server/cgos-hg/run/server-code/kill_cgos19"
 
-# ???
-# type: str
-# required
+# killFileWeb: existence of this file shuts down the WEB page builder
+# type: str, required
 killFileWeb: "/home/hellwig/Go-Server/cgos-hg/run/server-code/kill_webuild19"
 
-# ???
-# type: float
-# optional
-# default: 0.10
+# anchor_match_rate: ???
+# type: float, optional (default: 0.10)
 anchor_match_rate: 0.10
 
-#!!! this should be made optional !!!
-# ???
-# type: str
-# required
+# bad_users_file: file with user names which are not allowed to connect
+# type: str, optional (default: null)
 bad_users_file: null
 
-#!!! this should be made optional !!!
-# ???
-# type: int
-# required
+# moves_per_save: ???
+# type: int, optional (default: 1)
 moves_per_save: 1
 
-# ???
-# type: bool
-# optional
-# default: false
+# hashPassword: store hashed password
+# type: bool, optional (default: false)
 hashPassword: false
 
-# ???
-# type: str
-# optional
-# default: "AUTO"
+# matchMode: determines who matches players
+# type: str, optional (default: "AUTO")
 # possible values: "AUTO", "ADMIN"
 matchMode: "AUTO"

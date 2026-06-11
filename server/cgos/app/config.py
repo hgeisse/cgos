@@ -26,7 +26,6 @@ class MatchMode(Enum):
 
 class Configs:
     serverName: str
-    rule: str
     boardsize: int
     komi: float
     koRule: KoRule
@@ -77,7 +76,6 @@ class Configs:
 
         self.serverName = str(cfg["serverName"])
         self.portNumber = int(cfg["portNumber"])
-        self.rule = str(cfg["rule"])
         self.boardsize = int(cfg["boardsize"])
         self.komi = float(cfg["komi"])
         if "koRule" in cfg:
@@ -115,8 +113,14 @@ class Configs:
             self.anchor_match_rate = float(cfg["anchor_match_rate"])
         else:
             self.anchor_match_rate = 0.10
-        self.badUsersFile = str(cfg["bad_users_file"])
-        self.moves_per_save = int(cfg["moves_per_save"])
+        if "bad_users_file" in cfg:
+            self.badUsersFile = str(cfg["bad_users_file"])
+        else:
+            self.badUsersFile = None
+        if "moves_per_save" in cfg:
+            self.moves_per_save = int(cfg["moves_per_save"])
+        else:
+            self.moves_per_save = 1
         if "hashPassword" in cfg:
             self.hashPassword = bool(cfg["hashPassword"])
         else:
