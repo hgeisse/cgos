@@ -14,8 +14,8 @@ Engines:
     CommandLine: >
       /home/hellwig/Go/randomGo/run/randomGo/randomGo
 
-    ServerHost: "localhost"
-    ServerPort: 6819
+    ServerHost: "papa2"
+    ServerPort: 6809
     ServerUser: "hg-randomgo"
     ServerPassword: "geheim2143"
 
