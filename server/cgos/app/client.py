@@ -33,6 +33,10 @@ class Client:
 
     def close(self) -> None:
         self.alive = False
+        try:
+            self._writer.close()
+        except:
+            pass
 
     def send(self, *messages: str) -> bool:
         try:

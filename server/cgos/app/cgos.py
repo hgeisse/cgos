@@ -32,6 +32,12 @@ from .rating import newrating, strRate
 logger = getLogger("cgos_server")
 
 
+# Custom exception for graceful shutdown
+class ShutdownRequested(Exception):
+    """Exception raised when kill file is detected to trigger graceful shutdown"""
+    pass
+
+
 SKIP = 4
 ENCODING = "utf-8"
 ADMIN_USER = "admin"
@@ -62,6 +68,9 @@ workdir: str
 passctx: CryptContext
 
 cfg: Configs
+
+# Shutdown coordination
+shutdown_event: Optional[asyncio.Event] = None
 
 
 def joinMoves(moves: List[Tuple[str, int, Optional[str]]]) -> str:
@@ -1645,7 +1654,7 @@ def schedule_games() -> None:
             logger.info("KILL FILE FOUND - EXIT CGOS")
             if os.path.exists(cfg.killFileSrv):
                 os.remove(cfg.killFileSrv)
-            sys.exit(0)
+            raise ShutdownRequested()
 
         if cfg.matchMode == MatchMode.AUTO:
             match_games(ctme)
@@ -1927,6 +1936,8 @@ def match_games(ctme: datetime.datetime) -> None:
 
 
 async def schedule_games_task() -> None:
+    global shutdown_event
+    global act
 
     # after 45000ms schedule_games
     await asyncio.sleep(45.0)
@@ -1940,6 +1951,24 @@ async def schedule_games_task() -> None:
                 infoMsg(f"Games in progress: {last_game_count} Players:{len(act)}")
                 n = 0
             n += 1
+        except ShutdownRequested:
+            logger.info("Shutdown requested in schedule_games_task, exiting gracefully")
+            # Disconnect all active clients to unblock their handler tasks
+            logger.info(f"Disconnecting {len(act)} active clients")
+            for name, active_user in list(act.items()):
+                try:
+                    active_user.sock.close()
+                except Exception as e:
+                    logger.debug(f"Error closing client {name}: {str(e)}")
+            
+            # Yield control to event loop to allow client tasks to process the closed streams
+            # and complete their cleanup
+            logger.info("Waiting for client tasks to complete")
+            await asyncio.sleep(0.1)  # Give 100ms for tasks to detect closed streams and exit
+            
+            if shutdown_event:
+                shutdown_event.set()
+            return
         except Exception as e:
             logger.error(f"Error while scheduling game {str(e)}")
             logger.error(traceback.format_exc())
@@ -1952,6 +1981,9 @@ last_est = now_seconds()
 
 
 async def server_main() -> None:
+    global shutdown_event
+    shutdown_event = asyncio.Event()
+    
     server = await asyncio.start_server(accept_connection, "", cfg.portNumber)
 
     addrs = ", ".join(str(sock.getsockname()) for sock in server.sockets)
@@ -1961,10 +1993,38 @@ async def server_main() -> None:
     # ------------------------------
     task = asyncio.create_task(schedule_games_task())
 
-    async with server:
-        await server.serve_forever()
-
-    task.cancel()
+    try:
+        async with server:
+            # Create a task that waits for shutdown signal
+            shutdown_task = asyncio.create_task(shutdown_event.wait())
+            
+            # Wait for either serve_forever or shutdown_event
+            done, pending = await asyncio.wait(
+                [asyncio.create_task(server.serve_forever()), shutdown_task],
+                return_when=asyncio.FIRST_COMPLETED
+            )
+            
+            # Cancel the other task
+            for p in pending:
+                p.cancel()
+                try:
+                    await p
+                except asyncio.CancelledError:
+                    pass
+            
+            logger.info("Server closing due to shutdown signal")
+            server.close()
+            await server.wait_closed()
+    finally:
+        # Gracefully cancel the scheduling task if it's still running
+        logger.info("Shutting down server_main, cancelling schedule_games_task")
+        if not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                logger.debug("schedule_games_task cancelled successfully")
+                pass
 
 
 def runServer() -> None:
@@ -2023,4 +2083,14 @@ def runServer() -> None:
     initDatabase()
     openDatabase()
 
-    asyncio.run(server_main())
+    try:
+        asyncio.run(server_main())
+        logger.info("Server shutdown completed successfully")
+        sys.exit(0)
+    except KeyboardInterrupt:
+        logger.info("Server interrupted by keyboard")
+        sys.exit(0)
+    except Exception as e:
+        logger.error(f"Server error: {str(e)}")
+        logger.error(traceback.format_exc())
+        sys.exit(1)
