@@ -23,8 +23,8 @@ def config_file_logging(log_dir, log_name):
     fileHandler = logging.handlers.RotatingFileHandler(
         log_path,
         mode='a',
-        maxBytes=10000,
-        backupCount=3,
+        maxBytes=10*1024*1024,
+        backupCount=10,
     )
     fileHandler.setLevel(logging.INFO)
     fileHandler.setFormatter(simpleFormatter)
