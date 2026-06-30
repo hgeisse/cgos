@@ -24,16 +24,28 @@ You must as well decide where on the server the web pages of
 the server should be stored. I will refer to this directory as
 <server-html>.
 Edit configs/generic/cgos19.yaml and replace all occurrences of
-<server-data> with your (absolute) path for <server-data>. Do
-the same with <server-html>.
-Note: <server-html> should be a directory that your web server
+<server-data> with your path for <server-data>. Do the same with
+<server-html>. These paths may be either absolute or relative to
+the current working directory that is in effect when the server
+will be started.
+Note 1: <server-html> should be a directory that your web server
 presents to client browsers. In my case (Ubuntu 24.04), the web
 server is Apache2, configured to use /var/www/html as its base
 directory. Thus, <server-html> is /var/www/html/cgos on the
 machine running the server, accessible from the outside by its
 URL http://<server-name>/cgos. Don't forget to change owner and
 group of this directory to those of <server-code>, so that the
-server can write the WEB pages to the directory.
+server can write the WEB pages to the directory, for example:
+sudo mkdir -p /var/www/html/cgos
+cd /var/www/html
+sudo chown <owner>:<group> cgos
+sudo chmod 755 cgos
+Note 2: If you have installed a firewall on the server machine,
+you must open up the three ports on which your server is going
+to listen for TCP connections, for example:
+sudo ufw allow 6809/tcp
+sudo ufw allow 6813/tcp
+sudo ufw allow 6819/tcp
 
 5. Start the Go server
 python cgos/server.py <path_to_your_config_file> &

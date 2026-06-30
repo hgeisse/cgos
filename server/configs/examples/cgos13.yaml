@@ -33,7 +33,7 @@ timeGift: 0.25
 
 # logging_directory: directory of logging files
 # type: str, required
-logging_directory: "/home/hellwig/Go-Server/cgos-hg/run/server-data/13x13/logs"
+logging_directory: "../server-data/13x13/logs"
 
 # logging_filename: base name of logging files
 # type: str, required
@@ -41,15 +41,15 @@ logging_filename: "cgos_server.log"
 
 # database_state_file: ???
 # type: str, required
-database_state_file: "/home/hellwig/Go-Server/cgos-hg/run/server-data/13x13/state.db"
+database_state_file: "../server-data/13x13/state.db"
 
 # game_archive_database: ???
 # type: str, optional (default: null)
-game_archive_database: "/home/hellwig/Go-Server/cgos-hg/run/server-data/13x13/archive.db"
+game_archive_database: "../server-data/13x13/archive.db"
 
 # web_data_file: ???
 # type: str, required
-web_data_file: "/home/hellwig/Go-Server/cgos-hg/run/server-data/13x13/wdata.txt"
+web_data_file: "../server-data/13x13/wdata.txt"
 
 # defaultRating: rating a client starts with
 # type: float, required
@@ -90,11 +90,11 @@ establishedAge: 31.0
 # killFileSrv: existence of this file stops scheduling games and
 #              shuts down the server after all games are completed
 # type: str, required
-killFileSrv: "/home/hellwig/Go-Server/cgos-hg/run/server-code/kill_cgos13"
+killFileSrv: "./kill_cgos13"
 
 # killFileWeb: existence of this file shuts down the WEB page builder
 # type: str, required
-killFileWeb: "/home/hellwig/Go-Server/cgos-hg/run/server-code/kill_webuild13"
+killFileWeb: "./kill_webuild13"
 
 # anchor_match_rate: ???
 # type: float, optional (default: 0.10)
