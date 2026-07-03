@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+KILLFILE=kill_client
+
+touch $KILLFILE
+
+echo "Killfile $KILLFILE is now present."
+echo "Please wait until client has stopped."
