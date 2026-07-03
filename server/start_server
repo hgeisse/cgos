@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ $# == 0 ]
+then
+  echo "usage: $0 boardsize"
+  exit 1
+fi
+
+if [ $1 == 9 ]
+then
+  CONFFILE=configs/examples/cgos9.yaml
+elif [ $1 == 13 ]
+then
+  CONFFILE=configs/examples/cgos13.yaml
+elif [ $1 == 19 ]
+then
+  CONFFILE=configs/examples/cgos19.yaml
+else
+  echo "illegal boardsize $1: must be one of 9, 13, 19"
+  exit 1
+fi
+
+echo "Configuration file is $CONFFILE."
+echo "Server will be started."
+
+python cgos/server.py $CONFFILE &

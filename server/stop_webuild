@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ $# == 0 ]
+then
+  echo "usage: $0 boardsize"
+  exit 1
+fi
+
+if [ $1 == 9 ]
+then
+  KILLFILE=kill_webuild9
+elif [ $1 == 13 ]
+then
+  KILLFILE=kill_webuild13
+elif [ $1 == 19 ]
+then
+  KILLFILE=kill_webuild19
+else
+  echo "illegal boardsize $1: must be one of 9, 13, 19"
+  exit 1
+fi
+
+touch $KILLFILE
+
+echo "Killfile $KILLFILE is now present."
+echo "Please wait until web page builder has stopped."
