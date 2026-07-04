@@ -1,0 +1,5 @@
+#
+# list of anchor players with fixed Elo rating (and minimum K value)
+#
+
+hg-gnugo		1800
