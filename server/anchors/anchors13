@@ -1,5 +1,17 @@
 #
-# list of anchor players with fixed Elo rating (and minimum K value)
+# Anchor players file for CGOS server, boardsize 13
+#
+# Format: one anchor player per line
+# Syntax: name rating_in_elo
+#
+# Lines starting with # are ignored.
+# Empty lines are also ignored.
+#
+# When you create the "set_anchors13" trigger file (the actual
+# name is configurable), the server will read this file and
+# update all anchor players. Previous anchors will be replaced
+# with exactly these players. To have no anchor players, create
+# an empty anchors13 file.
 #
 
 hg-gnugo		1800
