@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ $# == 0 ]
+then
+  echo "usage: $0 boardsize"
+  exit 1
+fi
+
+if [ $1 == 9 ]
+then
+  TRIGFILE=set_anchors9
+elif [ $1 == 13 ]
+then
+  TRIGFILE=set_anchors13
+elif [ $1 == 19 ]
+then
+  TRIGFILE=set_anchors19
+else
+  echo "illegal boardsize $1: must be one of 9, 13, 19"
+  exit 1
+fi
+
+touch $TRIGFILE
+
+echo "Trigger file $TRIGFILE is now present."
+echo "Updating anchor players will take place soon."
