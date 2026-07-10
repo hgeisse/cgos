@@ -96,6 +96,14 @@ killFileSrv: "./kill_cgos13"
 # type: str, required
 killFileWeb: "./kill_webuild13"
 
+# anchor_trigger_file: existence of this file triggers setting of anchors
+# type: str, required
+anchor_trigger_file: "./set_anchors13"
+
+# anchor_ratings_file: anchor players file, together with their ratings
+# type: str, required
+anchor_ratings_file: "./anchors/anchors13"
+
 # anchor_match_rate: ???
 # type: float, optional (default: 0.10)
 anchor_match_rate: 0.10
