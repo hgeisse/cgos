@@ -1531,6 +1531,98 @@ def estimateRoundTimeLeft() -> int:
 last_game_count = -1
 
 
+def update_anchors_from_file(anchor_file: str) -> None:
+    """
+    Update anchor players from the given file.
+    Only runs when no games are in progress (must be guaranteed by caller).
+
+    Reads anchor player definitions from data file and updates the database.
+    File format: one anchor player per line, "name rating" (space-separated).
+    Comments (lines starting with '#') and empty lines are skipped.
+
+    Args:
+        Path to anchor file
+
+    Returns:
+        None
+    """
+
+    global db
+
+    # Verify data file exists
+    if not os.path.exists(anchor_file):
+        logger.warning(f"Anchor data file not found: {anchor_file}")
+        return
+
+    try:
+        # Parse anchor data file
+        players = []
+        seen_names = set()
+
+        with open(anchor_file, 'r') as f:
+            for line_no, line in enumerate(f, 1):
+                # Strip whitespace
+                line = line.strip()
+
+                # Skip empty lines
+                if not line:
+                    continue
+
+                # Skip comment lines (starting with '#')
+                if line.startswith('#'):
+                    continue
+
+                # Split into tokens
+                tokens = line.split()
+
+                # Validate exactly 2 tokens
+                if len(tokens) != 2:
+                    logger.error(
+                        f"Error parsing anchor file at line {line_no}: "
+                        f"expected 2 tokens, got {len(tokens)}"
+                    )
+                    return
+
+                name = tokens[0]
+                rating_str = tokens[1]
+
+                # Validate rating is a float
+                try:
+                    rating = float(rating_str)
+                except ValueError:
+                    logger.error(
+                        f"Error parsing anchor file at line {line_no}: "
+                        f"invalid rating (not a float): {rating_str}"
+                    )
+                    return
+
+                # Check for duplicates
+                if name in seen_names:
+                    logger.error(f"Duplicate anchor player name: {name}")
+                    return
+
+                seen_names.add(name)
+                players.append((name, rating))
+
+        # Update database (atomic transaction)
+        try:
+            db.execute("DELETE FROM anchors")
+            for name, rating in players:
+                db.execute("INSERT INTO anchors VALUES (?, ?)", (name, rating))
+            db.commit()
+        except sqlite3.Error as e:
+            logger.error(f"Database error updating anchors: {e}")
+            return
+
+        # Log success
+        logger.info(f"Updated anchor players from {anchor_file}")
+        return
+
+    except Exception as e:
+        logger.error(f"Error updating anchor players: {e}")
+        return
+
+
 def schedule_games() -> None:
 
     global SKIP
@@ -1638,9 +1730,17 @@ def schedule_games() -> None:
                     del act[name]
                     v.sock.close()
 
-        # match games & write file
+        # check for presence of trigger file for setting anchors
+        if os.path.exists(cfg.anchor_trigger_file):
+            # it is present, so update anchors
+            update_anchors_from_file(cfg.anchor_ratings_file)
+            # then delete trigger file
+            os.remove(cfg.anchor_trigger_file)
+
+        # get time
         ctme = datetime.datetime.now(datetime.timezone.utc)
 
+        # check for presence of killfile for server
         if os.path.exists(cfg.killFileSrv):
             write_web_data_file(ctme)
 
@@ -1656,6 +1756,7 @@ def schedule_games() -> None:
                 os.remove(cfg.killFileSrv)
             raise ShutdownRequested()
 
+        # match games & write file
         if cfg.matchMode == MatchMode.AUTO:
             match_games(ctme)
 

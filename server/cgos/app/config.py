@@ -48,6 +48,8 @@ class Configs:
     establishedAge: float
     killFileSrv: str
     killFileWeb: str
+    anchor_trigger_file: str
+    anchor_ratings_file: str
     anchor_match_rate: float
     badUsersFile: str
     moves_per_save: int
@@ -109,6 +111,8 @@ class Configs:
         self.establishedAge = float(cfg["establishedAge"])
         self.killFileSrv = str(cfg["killFileSrv"])
         self.killFileWeb = str(cfg["killFileWeb"])
+        self.anchor_trigger_file = str(cfg["anchor_trigger_file"])
+        self.anchor_ratings_file = str(cfg["anchor_ratings_file"])
         if "anchor_match_rate" in cfg:
             self.anchor_match_rate = float(cfg["anchor_match_rate"])
         else:
