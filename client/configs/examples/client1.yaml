@@ -16,7 +16,7 @@ Engines:
       --mode gtp --score aftermath --capture-all-dead --chinese-rules
       --level 10
 
-    ServerHost: "papa2"
+    ServerHost: "cgos-hg.de"
     ServerPort: 6809
     ServerUser: "hg-gnugo"
     ServerPassword: "geheim1234"

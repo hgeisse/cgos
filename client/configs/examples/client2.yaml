@@ -14,7 +14,7 @@ Engines:
     CommandLine: >
       /home/hellwig/Go/pachi/Pachi-12.86/pachi -D -o pachi.log
 
-    ServerHost: "papa2"
+    ServerHost: "cgos-hg.de"
     ServerPort: 6809
     ServerUser: "hg-pachi"
     ServerPassword: "geheim4321"

@@ -14,7 +14,7 @@ Engines:
     CommandLine: >
       /home/hellwig/Go/randomGo/run/randomGo/randomGo
 
-    ServerHost: "papa2"
+    ServerHost: "cgos-hg.de"
     ServerPort: 6809
     ServerUser: "hg-randomgo"
     ServerPassword: "geheim2143"

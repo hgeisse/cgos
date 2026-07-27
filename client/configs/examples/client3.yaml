@@ -14,7 +14,7 @@ Engines:
     CommandLine: >
       /home/hellwig/Go/brown/run/brown-1.0/brown
 
-    ServerHost: "papa2"
+    ServerHost: "cgos-hg.de"
     ServerPort: 6809
     ServerUser: "hg-brown"
     ServerPassword: "geheim3412"
