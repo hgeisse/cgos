@@ -285,7 +285,7 @@ def build_standings() -> None:
         wn = f"{w}({wr})"
         bn = f"{b}({br})"
 
-        res = "- playing ..."
+        res = "playing"
         # set  tme "&mdash;"
         tw = "&mdash;"
         tb = "&mdash;"
