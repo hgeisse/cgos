@@ -202,14 +202,17 @@ def build_standings() -> None:
 
     for s in f:
         if s[0] == "u":
-            _, nme, cnt, rat, dte, tme = s.split(" ")
+            _, nme, cnt, bay, rat, dte, tme = s.split(" ")
             m = re.search("(-?\\d+)\\?", rat)
             usr: List[Any]
             if m:
-                usr = [int(m[1]), 0, nme, cnt, dte, tme]
+                # rat is a positive or negative integer, followed by "?"
+                usr = [bay, int(m[1]), 0, nme, cnt, dte, tme]
                 players.append(usr)
             else:
-                usr = [rat, 1, nme, cnt, dte, tme]
+                # rat is a positive or negative integer, not followed by "?"
+                # (or a single "?")
+                usr = [bay, rat, 1, nme, cnt, dte, tme]
                 players.append(usr)
 
         if s[0] == "g":
@@ -234,10 +237,10 @@ def build_standings() -> None:
         "%Y-%m-%d %H:%M:%S"
     )
 
-    players.sort(key=lambda e: -int(e[0]))
+    players.sort(key=lambda e: -int(e[1]))
     render_players = []
     for rec in players:
-        rat, k, nme, cnt, dte, tme = rec
+        bay, rat, k, nme, cnt, dte, tme = rec
 
         dtime = f"{dte} {tme}"
 
@@ -266,6 +269,7 @@ def build_standings() -> None:
                 "k": k,
                 "status": status,
                 "nme": nme,
+                "bay": bay,
                 "rat": rat,
                 "cnt": cnt,
                 "dte": dte,

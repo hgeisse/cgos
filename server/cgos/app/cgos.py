@@ -7,6 +7,7 @@ import asyncio
 import datetime
 import gzip
 import json
+import numpy as np
 import os
 import random
 import re
@@ -98,7 +99,7 @@ def initDatabase() -> None:
 
         conn.execute("create table gameid(gid int)")
         conn.execute(
-            "create table password(name, pass, games int, rating, K, last_game, primary key(name) )"
+            "create table password(name, pass, games int, bayes_rating, rating, K, last_game, primary key(name) )"
         )
         conn.execute(
             "create table games(gid int, w, wr, b, br, dte, wtu, btu, res, final, primary key(gid))"
@@ -308,12 +309,116 @@ def seeRecord(game: Game, res: str, dte: str, tme: str) -> Tuple[str, str]:
 
 
 def getAnchors() -> Dict[str, float]:
+
     global db
 
     anchors = dict()
     for nme, rat in db.execute("SELECT name, rating FROM anchors"):
         anchors[nme] = rat
     return anchors
+
+
+def compute_MAP_ratings(num_players, w, anchors):
+    # Consistent with Newman's paper, we use
+    #   's' for the score (additive measure of skill) and
+    #   'pi' for the strength (multiplicative measure of skill).
+    # Newman initializes s randomly from a logistic distribution:
+    # s = np.random.logistic(loc=0.0, scale=1.0, size=num_players)
+    # Setting s to zero (and thus initializing the strength pi of
+    # all players to 1, the average player's pi) is equally good.
+    s = np.zeros(num_players, float)
+    pi = np.exp(s)
+    iter = 0
+    while True:
+        iter += 1
+        for k in range(num_players):
+            numer = 1.0 / (pi[k] + 1.0)
+            for j in range(num_players):
+                numer += w[k, j] * pi[j] / (pi[k] + pi[j])
+            denom = 1.0 / (pi[k] + 1.0)
+            for j in range(num_players):
+                denom += w[j, k] / (pi[k] + pi[j])
+            pi[k] = numer / denom
+        s_new = np.log(pi)
+        s_new = np.log(pi)
+        rms = np.add.reduce((s - s_new) ** 2.0)
+        rms = (rms / num_players) ** 0.5
+        s = s_new
+        if rms < 1.0e-3:
+            print(f'number of iterations: {iter}')
+            break
+    # Compute the linear regression line of the score-to-Elo mapping.
+    # Its slope is known to be 400/ln(10), because the iteration assumes
+    # p = 1/(1+exp(-delta)) while Elo defines p = 1/(1+10**(-delta/400))
+    # (at least for Chess - for Go Elo it is p = 1/(1+exp(-delta/100)),
+    # so that the slope there would be 100). Its y-intercept however
+    # must be calculated from the anchor players ratings in any case.
+    x = [s[idx] for (idx, elo) in anchors]
+    y = [elo for (idx, elo) in anchors]
+    slope = 400.0 / np.log(10.0)
+    intercept = np.mean(y) - slope * np.mean(x)
+    line_coeff = [slope, intercept]
+    print(f'line coefficients = {line_coeff}')
+    line = np.poly1d(line_coeff)
+    # compute Elo ratings of all players
+    ratings = line(s)
+    return ratings
+
+
+def bayesRate() -> None:
+
+    global db
+
+    # collect players, assign index, build list for reverse mapping
+    res = db.execute('SELECT name, games FROM password')
+    players = res.fetchall()
+    player_to_idx = {}
+    num_players = 0
+    idx_to_player = []
+    for (name, games) in players:
+        player_to_idx[name] = num_players
+        num_players += 1
+        idx_to_player.append(name)
+    print(f'{num_players} players, player_to_idx = {player_to_idx}')
+    print(f'idx_to_player = {idx_to_player}')
+    # count wins in the win matrix wij
+    wij = np.zeros((num_players, num_players), dtype=float)
+    res = db.execute('SELECT gid, w, b, res, dte FROM games')
+    games = res.fetchall()
+    print(f'Bayes-rating {len(games)} games')
+    for (gid, w, b, res, dte) in games:
+        w_idx = player_to_idx[w]
+        b_idx = player_to_idx[b]
+        if res[0] == "W":
+            wres = 1.0
+        elif res[0] == "B":
+            wres = 0.0
+        else:
+            wres = 0.5
+        bres = 1.0 - wres
+        wij[w_idx, b_idx] += wres
+        wij[b_idx, w_idx] += bres
+    print(f'w[i, j] =\n{wij}')
+    # get anchor players
+    anchor_dict = getAnchors()
+    anchors = [
+        (player_to_idx[name], anchor_dict[name]) for name in anchor_dict
+    ]
+    print(f'anchors = {anchors}')
+    # find maximum a posteriori ratings
+    ratings = compute_MAP_ratings(num_players, wij, anchors)
+    for idx in range(num_players):
+        elo = ratings[idx]
+        print(f'player {idx} ({idx_to_player[idx]}): {elo} Elo points')
+    # write ratings back to database
+    with db:
+        for idx in range(num_players):
+            name = idx_to_player[idx]
+            elo = ratings[idx]
+            db.execute(
+                "UPDATE password SET bayes_rating=? WHERE name=?",
+                (elo, name),
+            )
 
 
 def batchRate() -> None:
@@ -861,7 +966,7 @@ def _handle_player_password(sock: Client, data: str) -> None:
         else:
             pw_store = pw
         db.execute(
-            """INSERT INTO password VALUES(?, ?, 0, ?, ?, "2000-01-01 00:00")""",
+            """INSERT INTO password VALUES(?, ?, 0, 0, ?, ?, "2000-01-01 00:00")""",
             (
                 who,
                 pw_store,
@@ -1709,6 +1814,8 @@ def schedule_games() -> None:
         ctme = datetime.datetime.now(datetime.timezone.utc)
         write_web_data_file(ctme)
     else:
+        logger.info("Bayes rating")
+        bayesRate()
         logger.info("Batch rating")
         batchRate()
 
@@ -1782,11 +1889,11 @@ def write_web_data_file(ctme: datetime.datetime) -> None:
         # ------------------------------------------------------------------
         atme = ctme - datetime.timedelta(seconds=86400 * 190)
         lutme = atme.strftime("%Y-%m-%d %H:%M:%S")
-        for nme, gms, rat, k, lg in db.execute(
-            "SELECT name, games, rating, K, last_game FROM password WHERE last_game >= ?",
+        for nme, gms, bay, rat, k, lg in db.execute(
+            "SELECT name, games, bayes_rating, rating, K, last_game FROM password WHERE last_game >= ?",
             (lutme,),
         ):
-            wd.write(f"u {nme} {gms} {strRate(rat, k)} {lg}\n")
+            wd.write(f"u {nme} {gms} {strRate(bay, k)} {strRate(rat, k)} {lg}\n")
 
         # recently completed games
         # ------------------------

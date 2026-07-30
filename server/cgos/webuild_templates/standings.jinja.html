@@ -28,8 +28,8 @@ table.players tr.newplayer td { background: #ffff80; }
 
 <center>
     <H5>
-    <a href="bayes.html">BayesElo</a> is more accurate, but not yet available, sorry.<br>
-    <a href="http://senseis.xmp.net/?ComputerGoServer">Sensei's Computer Go Server Page</a></H5>
+    <a href="http://senseis.xmp.net/?ComputerGoServer">Sensei's Computer Go Server Page</a>
+    </H5>
 </center>
 
 <br>
@@ -37,14 +37,14 @@ table.players tr.newplayer td { background: #ffff80; }
 <H4 ALIGN=CENTER>Ratings</H4>
 <center><table class='players' border=1 cellpadding=4 cellspacing=0 justify=center>
     <thead>
-    <tr><th>Game</th><th>Program Name</th><th>Rating</th><th>Games Played</th><th>Last Game</th></tr>
+    <tr><th>Game</th><th>Program Name</th><th>Rating (Bayes)</th><th>Rating (Std Elo)</th><th>Games Played</th><th>Last Game</th></tr>
     </thead>
 
     <tbody>
     {% for rec in players %}
         <tr class="{%- if rec.k == 0 -%}newplayer{%- endif -%}">
         <td align=center>{{rec.status}}</td>
-        <td><a href="cross/{{rec.nme}}.html">{{rec.nme}}</a></td><td>{{rec.rat}}</td>
+        <td><a href="cross/{{rec.nme}}.html">{{rec.nme}}</a></td><td>{{rec.bay}}</td><td>{{rec.rat}}</td>
         <td align=center>{{rec.cnt}}</td><td>{{rec.dte}} {{rec.tme}}</td></tr>
     {% endfor %}
     </tbody>
