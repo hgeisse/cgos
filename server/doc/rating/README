@@ -1,0 +1,21 @@
+Zermelo.pdf
+-----------
+E. Zermelo, 1929
+Die Berechnung der Turnier-Ergebnisse als ein
+Maximumproblem der Wahrscheinlichkeitsrechnung
+(First paper on the subject later known as Bradley-Terry model)
+
+
+Hunter.pdf
+----------
+David R. Hunter, 2004
+MM Algorithms for Generalized Bradley-Terry Models
+(Important paper on minorization-maximization algorithms)
+
+
+Newman.pdf
+----------
+M. E. J. Newman, 2023
+Efficient Computation of Rankings from Pairwise Comparisons
+(Describes an efficient and robust form of Zermelo's ranking
+algorithm, which is used in our project)
