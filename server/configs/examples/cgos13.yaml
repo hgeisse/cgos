@@ -69,7 +69,7 @@ htmlDir: "/var/www/html/cgos/13x13"
 
 # htmlInfoMsg: ???
 # type: str, required
-htmlInfoMsg: "Boardsize 13x13 - 10 minutes per side"
+htmlInfoMsg: "Boardsize 13x13 - Komi 7.0 - 10 minutes per side"
 
 # sgfDir: ???
 # type: str, required
