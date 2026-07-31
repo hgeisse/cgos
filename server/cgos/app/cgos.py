@@ -379,13 +379,20 @@ def bayesRate() -> None:
         player_to_idx[name] = num_players
         num_players += 1
         idx_to_player.append(name)
+    if num_players < 2:
+        # less than two players: no rating possible
+        return
     print(f'{num_players} players, player_to_idx = {player_to_idx}')
     print(f'idx_to_player = {idx_to_player}')
     # count wins in the win matrix wij
     wij = np.zeros((num_players, num_players), dtype=float)
     res = db.execute('SELECT gid, w, b, res, dte FROM games')
     games = res.fetchall()
-    print(f'Bayes-rating {len(games)} games')
+    num_games = len(games)
+    if num_games == 0:
+        # no games: no rating possible
+        return
+    print(f'Bayes-rating {num_games} games')
     for (gid, w, b, res, dte) in games:
         w_idx = player_to_idx[w]
         b_idx = player_to_idx[b]
@@ -404,7 +411,11 @@ def bayesRate() -> None:
     anchors = [
         (player_to_idx[name], anchor_dict[name]) for name in anchor_dict
     ]
-    print(f'anchors = {anchors}')
+    num_anchors = len(anchors)
+    if num_anchors == 0:
+        # no anchors: no rating possible
+        return
+    print(f'{num_anchors} anchors = {anchors}')
     # find maximum a posteriori ratings
     ratings = compute_MAP_ratings(num_players, wij, anchors)
     for idx in range(num_players):
