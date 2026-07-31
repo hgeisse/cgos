@@ -65,7 +65,7 @@ maxK: 200.0
 
 # htmlDir: directory for storing WEB pages
 # type: str, required
-htmlDir: "/var/www/html/cgos/13x13"
+htmlDir: "/var/www/html/13x13"
 
 # htmlInfoMsg: ???
 # type: str, required

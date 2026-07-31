@@ -31,15 +31,13 @@ will be started.
 Note 1: <server-html> should be a directory that your web server
 presents to client browsers. In my case (Ubuntu 24.04), the web
 server is Apache2, configured to use /var/www/html as its base
-directory. Thus, <server-html> is /var/www/html/cgos on the
-machine running the server, accessible from the outside by its
-URL http://<server-name>/cgos. Don't forget to change owner and
-group of this directory to those of <server-code>, so that the
-server can write the WEB pages to the directory, for example:
-sudo mkdir -p /var/www/html/cgos
-cd /var/www/html
-sudo chown <owner>:<group> cgos
-sudo chmod 755 cgos
+directory. Thus, <server-html> is /var/www/html on the machine
+running the server, accessible from the outside by its URL
+http://<server-name>. Don't forget to change owner and group
+of this directory to those of <server-code>, so that the server
+can write the WEB pages to the directory, for example:
+cd /var/www
+sudo chown <owner>:<group> html
 Note 2: If you have installed a firewall on the server machine,
 you must open up the three ports on which your server is going
 to listen for TCP connections, for example:
