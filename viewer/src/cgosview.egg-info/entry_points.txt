@@ -1,0 +1,2 @@
+[console_scripts]
+cgosview = cgosview.__main__:main

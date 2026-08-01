@@ -1,0 +1,12 @@
+LICENSE
+README.md
+pyproject.toml
+src/cgosview/__init__.py
+src/cgosview/__main__.py
+src/cgosview.egg-info/PKG-INFO
+src/cgosview.egg-info/SOURCES.txt
+src/cgosview.egg-info/dependency_links.txt
+src/cgosview.egg-info/entry_points.txt
+src/cgosview.egg-info/requires.txt
+src/cgosview.egg-info/top_level.txt
+tests/test_gogame.py
