@@ -265,6 +265,8 @@ Async client for CGOS server:
 - Game state parsing
 - Real-time updates via callbacks
 
+**Protocol Documentation**: See `CGOS_PROTOCOL.md` for complete protocol specification including message format, data exchange, and implementation details.
+
 ### GUI Components
 
 - **MainWindow**: Application window and game management
@@ -288,6 +290,14 @@ Contributions are welcome! Please:
 2. Add type hints to all functions
 3. Include unit tests for new features
 4. Update documentation
+
+## Documentation Files
+
+- **README.md** - This file (overview, installation, usage)
+- **DEVELOPMENT.md** - Developer guide with architecture, testing, and common tasks
+- **IMPLEMENTATION_SUMMARY.md** - Detailed implementation status and statistics
+- **CGOS_PROTOCOL.md** - Complete CGOS protocol specification and data exchange details
+- **PROJECT_SUMMARY.txt** - Quick reference with features and checklist
 
 ## License
 
