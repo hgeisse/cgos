@@ -1,5 +1,9 @@
-1. Install tcl/tk on your machine.
-2. Install the package 'tcl-vfs'.
-3. Copy one of the tclkits (e.g., tclkit-linux-x86_64) and sdx.kit
-   to a common directory. The tclkit should be renamed to 'tclkit'.
-4. Start with './tclkit sdx.kit'.
+1. Install Tcl/Tk on your machine (package 'tcl').
+2. Install the Tcl virtual file system (package 'tcl-vfs').
+3. Copy one of the tclkits (e.g., tclkit-linux-x86_64) to the
+   current directory (sdx.kit should be here already). Rename
+   the tclkit to 'tclkit'.
+4. If you want to work with the starkit 'sdx.kit', start with
+   './tclkit sdx.kit' and use the kit's help function.
+5. If you want to build the CGOS viewer, change to the viewer's
+   top directory and run 'PATH="../third_party:$PATH" make'.

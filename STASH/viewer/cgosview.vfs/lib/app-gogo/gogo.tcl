@@ -35,8 +35,8 @@ set ci 0
 # ----------------------
 set  idir "$starkit::topdir/lib/app-gogo/images"
 
-set  server cgos.boardspace.net
-set  port   6867
+set  server cgos-hg.de
+set  port   6809
 
 if {$argc > 0} {
     set server [lindex $argv 0]

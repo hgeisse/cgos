@@ -1,4 +1,4 @@
-include ../make.cfg
+include ./make.cfg
 
 TARGETS=$(patsubst %,cgosview-%,$(TARGET_PLATFORMS))
 
