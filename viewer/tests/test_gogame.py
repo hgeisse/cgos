@@ -52,7 +52,7 @@ class TestGoGameInit:
     def test_color_to_move_initially_black(self):
         """Test that black plays first."""
         game = GoGame(9)
-        assert game.color_to_move() == Stone.BLACK
+        assert game.color_to_move == Stone.BLACK
 
 
 class TestMoveToIndex:
@@ -133,11 +133,11 @@ class TestSimpleMoves:
         
         # First move - black
         game.make_move("E5")
-        assert game.color_to_move() == Stone.WHITE
+        assert game.color_to_move == Stone.WHITE
         
         # Second move - white
         game.make_move("E6")
-        assert game.color_to_move() == Stone.BLACK
+        assert game.color_to_move == Stone.BLACK
     
     def test_occupied_square(self):
         """Test that occupied squares are rejected."""

@@ -2,19 +2,30 @@
 Main application window for CGOSVIEW.
 
 Displays game list and provides controls for viewing games.
+Integrates with async network client for real-time game streaming.
+Supports multiple concurrent games in tabs (up to 10).
 """
 
 import sys
+import asyncio
+import logging
+from typing import Dict, Optional
+
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QListWidget, QListWidgetItem,
-    QSplitter, QMessageBox
+    QSplitter, QMessageBox, QTabWidget
 )
-from PyQt6.QtCore import Qt, QSize, QTimer
-from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSlot
+from PyQt6.QtGui import QFont, QIcon, QColor
 
-from cgosview.game.gogame import GoGame
-from cgosview.gui.board_widget import GameBoardWidget
+from cgosview.gui.game_tab import GameTab
+from cgosview.network.cgos_client import CGOSClient, GameInfo, ConnectionState
+from cgosview.gui.signals import NetworkSignals
+from cgosview.utils.threading import AsyncioThread
+from cgosview.config import ViewerConfig
+
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -24,20 +35,39 @@ class MainWindow(QMainWindow):
     Displays:
     - Server connection status
     - List of active games
-    - Currently selected game board
-    - Navigation controls
+    - Multiple game tabs (up to 10 concurrent games)
+    - Navigation controls per tab
+    
+    Manages network connection and real-time game updates across all tabs.
     """
     
-    def __init__(self):
-        """Initialize the main window."""
+    MAX_OPEN_GAMES = 10
+    
+    def __init__(self, config: Optional[ViewerConfig] = None):
+        """
+        Initialize the main window.
+        
+        Args:
+            config: ViewerConfig with server settings (optional)
+        """
         super().__init__()
         
         self.setWindowTitle("CGOSVIEW - Go Game Viewer")
-        self.setGeometry(100, 100, 1200, 800)
+        self.setGeometry(100, 100, 1400, 800)
+        
+        # Configuration
+        self.config = config or ViewerConfig()
         
         # Application state
-        self.current_game: GoGame | None = None
-        self.games_list: dict = {}
+        self.games_list: Dict[int, GameInfo] = {}
+        self.open_tabs: Dict[int, GameTab] = {}  # gid -> GameTab widget
+        self.is_closing = False  # Flag to prevent blocking dialogs during shutdown
+        
+        # Network components
+        self.network_signals = NetworkSignals()
+        self.client: Optional[CGOSClient] = None
+        self.async_thread: Optional[AsyncioThread] = None
+        self.receive_task = None
         
         # Create UI
         self._create_ui()
@@ -45,10 +75,22 @@ class MainWindow(QMainWindow):
         # Apply styles
         self._apply_styles()
         
-        # Create status timer
-        self.status_timer = QTimer()
-        self.status_timer.timeout.connect(self._update_status)
+        # Connect network signals to GUI slots
+        self._connect_signals()
         
+        # Auto-connect on startup
+        self._start_network_connection()
+        
+        logger.info("MainWindow initialized")
+    
+    def _connect_signals(self) -> None:
+        """Connect network signals to GUI slots."""
+        self.network_signals.game_added.connect(self._on_game_added)
+        self.network_signals.game_updated.connect(self._on_game_updated)
+        self.network_signals.game_finished.connect(self._on_game_finished)
+        self.network_signals.connection_state_changed.connect(self._on_connection_state_changed)
+        self.network_signals.error_occurred.connect(self._on_error)
+    
     def _create_ui(self) -> None:
         """Create user interface elements."""
         # Central widget
@@ -61,99 +103,49 @@ class MainWindow(QMainWindow):
         left_layout = QVBoxLayout()
         
         # Server info
-        server_label = QLabel("CGOS Server")
+        server_label = QLabel(f"Server:  {self.config.server}        Port:  {self.config.port}")
         server_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         left_layout.addWidget(server_label)
         
-        self.server_status = QLabel("Status: Disconnected")
-        self.server_status.setStyleSheet("color: red;")
-        left_layout.addWidget(self.server_status)
-        
-        # Connection buttons
-        button_layout = QHBoxLayout()
-        
-        self.connect_btn = QPushButton("Connect")
-        self.connect_btn.clicked.connect(self._on_connect)
-        button_layout.addWidget(self.connect_btn)
-        
-        self.disconnect_btn = QPushButton("Disconnect")
-        self.disconnect_btn.clicked.connect(self._on_disconnect)
-        self.disconnect_btn.setEnabled(False)
-        button_layout.addWidget(self.disconnect_btn)
-        
-        left_layout.addLayout(button_layout)
-        
-        # Games list
-        games_label = QLabel("Active Games")
-        games_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        left_layout.addWidget(games_label)
+        # Games list header with column titles
+        monospace_font = QFont("Consolas", 10)
+        header_label = QLabel(" Game  White            Black            Result")
+        header_label.setFont(monospace_font)
+        header_label.setStyleSheet("font-weight: bold; padding: 5px 0px;")
+        left_layout.addWidget(header_label)
         
         self.games_widget = QListWidget()
         self.games_widget.itemClicked.connect(self._on_game_selected)
+        # Use monospace font for proper column alignment
+        monospace_font = QFont("Consolas", 10)
+        self.games_widget.setFont(monospace_font)
         left_layout.addWidget(self.games_widget)
+        
+        # Open games count
+        self.open_count_label = QLabel("Open tabs: 0/8")
+        self.open_count_label.setStyleSheet("color: #666; font-size: 9px;")
+        left_layout.addWidget(self.open_count_label)
         
         left_panel.setLayout(left_layout)
         
-        # ===== RIGHT PANEL: Game Board =====
-        right_panel = QWidget()
-        right_layout = QVBoxLayout()
-        
-        # Game info
-        self.game_info = QLabel(
-            "Select a game from the list\n"
-            "White: N/A vs Black: N/A"
-        )
-        self.game_info.setFont(QFont("Arial", 10))
-        self.game_info.setStyleSheet("background-color: #f0f0f0; padding: 10px;")
-        right_layout.addWidget(self.game_info)
-        
-        # Board widget
-        self.board_widget = GameBoardWidget(19)
-        self.board_widget.setMinimumSize(QSize(600, 600))
-        right_layout.addWidget(self.board_widget)
-        
-        # Navigation buttons
-        nav_layout = QHBoxLayout()
-        
-        self.nav_first = QPushButton("<<")
-        self.nav_first.setMaximumWidth(60)
-        self.nav_first.clicked.connect(self._on_nav_first)
-        nav_layout.addWidget(self.nav_first)
-        
-        self.nav_prev = QPushButton("<")
-        self.nav_prev.setMaximumWidth(60)
-        self.nav_prev.clicked.connect(self._on_nav_prev)
-        nav_layout.addWidget(self.nav_prev)
-        
-        self.move_label = QLabel("Move: 0/0")
-        self.move_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        nav_layout.addWidget(self.move_label)
-        
-        self.nav_next = QPushButton(">")
-        self.nav_next.setMaximumWidth(60)
-        self.nav_next.clicked.connect(self._on_nav_next)
-        nav_layout.addWidget(self.nav_next)
-        
-        self.nav_last = QPushButton(">>")
-        self.nav_last.setMaximumWidth(60)
-        self.nav_last.clicked.connect(self._on_nav_last)
-        nav_layout.addWidget(self.nav_last)
-        
-        right_layout.addLayout(nav_layout)
-        
-        right_panel.setLayout(right_layout)
+        # ===== RIGHT PANEL: Tab Widget =====
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self._on_tab_close_requested)
         
         # Add panels to main layout with splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(left_panel)
-        splitter.addWidget(right_panel)
-        splitter.setSizes([300, 900])
+        splitter.addWidget(self.tab_widget)
+        splitter.setSizes([420, 980])
         
         main_layout.addWidget(splitter)
         central.setLayout(main_layout)
         
         # Status bar
-        self.statusBar().showMessage("Ready")
+        status_bar = self.statusBar()
+        if status_bar:
+            status_bar.showMessage("Ready")
     
     def _apply_styles(self) -> None:
         """Apply application styles."""
@@ -188,116 +180,313 @@ class MainWindow(QMainWindow):
         """
         self.setStyleSheet(style)
     
-    def _on_connect(self) -> None:
-        """Handle connect button click."""
-        self.server_status.setText("Status: Connecting...")
-        self.server_status.setStyleSheet("color: orange;")
-        self.connect_btn.setEnabled(False)
-        self.disconnect_btn.setEnabled(True)
-        
-        # Add sample games for testing
-        self._add_sample_games()
-        
-        self.status_timer.start(1000)
+
     
-    def _on_disconnect(self) -> None:
-        """Handle disconnect button click."""
-        self.server_status.setText("Status: Disconnected")
-        self.server_status.setStyleSheet("color: red;")
-        self.connect_btn.setEnabled(True)
-        self.disconnect_btn.setEnabled(False)
+    def _start_network_connection(self) -> None:
+        """Start network client and connection in async thread."""
+        try:
+            logger.info(f"Attempting to connect to {self.config.server}:{self.config.port}")
+            
+            # Create async thread if not exists
+            if self.async_thread is None:
+                self.async_thread = AsyncioThread()
+                self.async_thread.start()
+            
+            # Create client with callbacks connected to signals
+            self.client = CGOSClient(
+                host=self.config.server,
+                port=self.config.port,
+                connection_timeout=self.config.connection_timeout,
+                heartbeat_interval=self.config.heartbeat_interval,
+                max_retries=self.config.reconnect_max_retries,
+                reconnect_base_delay=self.config.reconnect_base_delay,
+                max_games=self.config.max_games
+            )
+            
+            # Wire callbacks to signals
+            def emit_game_added(game: GameInfo):
+                self.network_signals.game_added.emit(game)
+            
+            def emit_game_updated(game: GameInfo):
+                self.network_signals.game_updated.emit(game)
+            
+            def emit_game_finished(game: GameInfo):
+                self.network_signals.game_finished.emit(game)
+            
+            def emit_connection_state_changed(state: ConnectionState, error: Optional[str]):
+                self.network_signals.connection_state_changed.emit(state, error)
+            
+            self.client.on_game_added = emit_game_added
+            self.client.on_game_updated = emit_game_updated
+            self.client.on_game_finished = emit_game_finished
+            self.client.on_connection_state_changed = emit_connection_state_changed
+            
+            # Schedule connection and receive in async thread
+            async def connect_and_receive():
+                if await self.client.connect_with_retry():
+                    await self.client.receive_games()
+                else:
+                    self.network_signals.error_occurred.emit(
+                        f"Failed to connect to {self.config.server}:{self.config.port}"
+                    )
+            
+            if self.async_thread:
+                self.receive_task = self.async_thread.run_async(connect_and_receive())
         
-        self.status_timer.stop()
+        except Exception as e:
+            logger.error(f"Error starting network connection: {e}")
+            self.network_signals.error_occurred.emit(f"Connection error: {e}")
+    
+    def _stop_network_connection(self) -> None:
+        """Stop network client and async thread."""
+        try:
+            if self.client:
+                # Schedule disconnect in async thread
+                async def disconnect():
+                    await self.client.disconnect()
+                
+                if self.async_thread:
+                    self.async_thread.run_async(disconnect())
+            
+            if self.async_thread:
+                self.async_thread.stop()
+                self.async_thread = None
+            
+            self.client = None
+            self.receive_task = None
+            
+            logger.info("Network connection stopped")
+        
+        except Exception as e:
+            logger.error(f"Error stopping network connection: {e}")
+    
+    @pyqtSlot(GameInfo)
+    def _on_game_added(self, game: GameInfo) -> None:
+        """Handle new game added from server."""
+        logger.info(f"Game added: {game.gid} - {game.white_player} vs {game.black_player}")
+        
+        # Store game
+        self.games_list[game.gid] = game
+        
+        # Add to list at top (newest first)
+        item_text = self._format_game_list_item(game)
+        item = QListWidgetItem(item_text)
+        item.setData(Qt.ItemDataRole.UserRole, game.gid)
+        self.games_widget.insertItem(0, item)
+        
+        # Update colors
+        self._update_game_list_item_color(item, game)
+        
+        # Auto-scroll to show new game
+        self.games_widget.scrollToItem(item)
+    
+    @pyqtSlot(GameInfo)
+    def _on_game_updated(self, game: GameInfo) -> None:
+        """Handle game update (new moves) from server."""
+        logger.debug(f"Game updated: {game.gid}, {len(game.moves)} moves")
+        
+        # Update stored game
+        self.games_list[game.gid] = game
+        
+        # Update list item
+        self._update_game_list_item(game)
+        
+        # If this game has an open tab, update it
+        if game.gid in self.open_tabs:
+            tab = self.open_tabs[game.gid]
+            tab.update_game(game)
+            # Update tab title with new move count
+            tab_index = self.tab_widget.indexOf(tab)
+            if tab_index >= 0:
+                self.tab_widget.setTabText(tab_index, tab.get_tab_title())
+    
+    @pyqtSlot(GameInfo)
+    def _on_game_finished(self, game: GameInfo) -> None:
+        """Handle game finished from server."""
+        logger.info(f"Game finished: {game.gid} - {game.result}")
+        
+        # Update stored game
+        self.games_list[game.gid] = game
+        
+        # Update list item with finished styling
+        self._update_game_list_item(game)
+        
+        # Update any open tab with finished game
+        if game.gid in self.open_tabs:
+            tab = self.open_tabs[game.gid]
+            tab.update_game(game)
+            # Update tab title to show result
+            tab_index = self.tab_widget.indexOf(tab)
+            if tab_index >= 0:
+                self.tab_widget.setTabText(tab_index, tab.get_tab_title())
+    
+    @pyqtSlot(ConnectionState, object)
+    def _on_connection_state_changed(self, state: ConnectionState, error: Optional[str]) -> None:
+        """Handle connection state change."""
+        if state == ConnectionState.CONNECTED:
+            logger.info("Connected to server")
+        elif state == ConnectionState.CONNECTING:
+            logger.debug("Connecting to server...")
+        elif state == ConnectionState.DISCONNECTED:
+            logger.info("Disconnected from server")
+        elif state == ConnectionState.ERROR:
+            logger.error(f"Connection error: {error}")
+            self._on_error(f"Connection error: {error or 'Unknown error'}")
+    
+    @pyqtSlot(str)
+    def _on_error(self, message: str) -> None:
+        """Handle error from network client."""
+        logger.error(f"Network error: {message}")
+        # Don't show blocking dialogs if the application is closing
+        # to avoid deadlock with thread shutdown
+        if not self.is_closing:
+            QMessageBox.warning(self, "Connection Error", message)
     
     def _on_game_selected(self, item: QListWidgetItem) -> None:
         """Handle game selection from list."""
-        game_name = item.text()
-        # Extract game ID from display name
-        parts = game_name.split(" - ")
-        if len(parts) >= 1:
-            try:
-                gid = int(parts[0])
-                self._load_game(gid)
-            except ValueError:
-                pass
+        gid = item.data(Qt.ItemDataRole.UserRole)
+        if gid and gid in self.games_list:
+            self._open_or_switch_to_game_tab(gid)
     
-    def _load_game(self, gid: int) -> None:
-        """Load and display a game."""
+    def _open_or_switch_to_game_tab(self, gid: int) -> None:
+        """
+        Open a new tab for the game, or switch to existing tab if already open.
+        
+        Args:
+            gid: Game ID to open/switch to
+        """
         if gid not in self.games_list:
             return
         
+        # If tab already exists, switch to it
+        if gid in self.open_tabs:
+            tab_index = self.tab_widget.indexOf(self.open_tabs[gid])
+            if tab_index >= 0:
+                self.tab_widget.setCurrentIndex(tab_index)
+            logger.debug(f"Switched to existing tab for game {gid}")
+            return
+        
+        # Check if we can open a new tab
+        if len(self.open_tabs) >= self.MAX_OPEN_GAMES:
+            QMessageBox.warning(
+                self, 
+                "Maximum Games Open",
+                f"Maximum of {self.MAX_OPEN_GAMES} games can be open at once.\n"
+                "Close a tab to open another game."
+            )
+            logger.warning(f"Cannot open game {gid}: maximum tabs reached")
+            return
+        
+        # Create new tab
         game_info = self.games_list[gid]
+        tab = GameTab(gid, game_info)
         
-        # Create new game instance
-        self.current_game = GoGame(game_info["size"])
+        # Add to tab widget
+        self.open_tabs[gid] = tab
+        tab_index = self.tab_widget.addTab(tab, tab.get_tab_title())
+        self.tab_widget.setCurrentIndex(tab_index)
         
-        # Play moves if available
-        for move in game_info.get("moves", []):
-            self.current_game.make_move(move)
+        # Update open count
+        self._update_open_count()
         
-        # Update display
-        self.board_widget.set_game(self.current_game)
+        status_bar = self.statusBar()
+        if status_bar:
+            status_bar.showMessage(f"Opened game {gid}")
         
-        self.game_info.setText(
-            f"White: {game_info['white']} vs Black: {game_info['black']}\n"
-            f"Board: {game_info['size']}x{game_info['size']} | "
-            f"Komi: {game_info['komi']}"
-        )
-        
-        self._update_move_label()
-        self.statusBar().showMessage(f"Loaded game {gid}")
+        logger.info(f"Opened new tab for game {gid}")
     
-    def _add_sample_games(self) -> None:
-        """Add sample games for demonstration."""
-        sample_games = [
-            {"gid": 1, "white": "Engine1", "black": "Engine2", "size": 19, "komi": 6.5, "moves": []},
-            {"gid": 2, "white": "Player1", "black": "Player2", "size": 9, "komi": 6.5, "moves": []},
-            {"gid": 3, "white": "Bot_A", "black": "Bot_B", "size": 13, "komi": 7.5, "moves": []},
-        ]
+    def _on_tab_close_requested(self, index: int) -> None:
+        """
+        Handle tab close button click.
         
-        self.games_list = {}
-        self.games_widget.clear()
+        Args:
+            index: Index of the tab to close
+        """
+        tab = self.tab_widget.widget(index)
+        if isinstance(tab, GameTab):
+            gid = tab.gid
+            self.tab_widget.removeTab(index)
+            if gid in self.open_tabs:
+                del self.open_tabs[gid]
+            self._update_open_count()
+            logger.info(f"Closed tab for game {gid}")
+    
+    def _update_open_count(self) -> None:
+        """Update the open games counter label."""
+        count = len(self.open_tabs)
+        self.open_count_label.setText(f"Open tabs: {count}/{self.MAX_OPEN_GAMES}")
+    
+    def _format_game_list_item(self, game: GameInfo) -> str:
+        """
+        Format game info for display in list.
         
-        for game in sample_games:
-            self.games_list[game["gid"]] = game
-            item_text = f"{game['gid']} - {game['white']} vs {game['black']}"
-            self.games_widget.addItem(item_text)
+        Args:
+            game: GameInfo object
+        
+        Returns:
+            Formatted string for list display
+        """
+        move_count = len(game.moves)
+        status = game.result or f"{move_count} moves"
+        return f"{game.gid:5d}  {game.white_player:15s}  {game.black_player:15s}  [{status}]"
     
-    def _update_status(self) -> None:
-        """Update connection status."""
-        self.server_status.setText("Status: Connected")
-        self.server_status.setStyleSheet("color: green;")
+    def _update_game_list_item(self, game: GameInfo) -> None:
+        """
+        Update a game list item with current game info.
+        
+        Args:
+            game: GameInfo object to update
+        """
+        for i in range(self.games_widget.count()):
+            item = self.games_widget.item(i)
+            if item and item.data(Qt.ItemDataRole.UserRole) == game.gid:
+                item.setText(self._format_game_list_item(game))
+                self._update_game_list_item_color(item, game)
+                break
     
-    def _update_move_label(self) -> None:
-        """Update the move counter label."""
-        if self.current_game:
-            total = len(self.current_game.list_moves())
-            current = self.current_game.current_move_number
-            self.move_label.setText(f"Move: {current}/{total}")
+    def _update_game_list_item_color(self, item: QListWidgetItem, game: GameInfo) -> None:
+        """
+        Update item color based on game status.
+        
+        In-progress games: normal text
+        Finished games: different colors based on result
+        
+        Args:
+            item: QListWidgetItem to update
+            game: GameInfo with current status
+        """
+        if game.is_finished():
+            # Game finished - use different colors
+            if game.result:
+                if game.result.startswith("W+"):
+                    # White won
+                    item.setForeground(QColor(100, 100, 100))  # Gray for finished
+                elif game.result.startswith("B+"):
+                    # Black won
+                    item.setForeground(QColor(100, 100, 100))  # Gray for finished
+                else:
+                    # Draw or resignation
+                    item.setForeground(QColor(100, 100, 100))  # Gray for finished
         else:
-            self.move_label.setText("Move: 0/0")
+            # Game in progress - normal text
+            item.setForeground(QColor(0, 0, 0))
     
-    def _on_nav_first(self) -> None:
-        """Go to first move."""
-        if self.current_game:
-            self.current_game.undo_all()
-            self.board_widget.update()
-            self._update_move_label()
+    def closeEvent(self, event) -> None:
+        """
+        Handle window close event.
+        
+        Gracefully disconnects from the server before closing.
+        
+        Args:
+            event: Close event
+        """
+        logger.info("Closing application")
+        # Set flag BEFORE stopping network to prevent error dialogs during shutdown
+        self.is_closing = True
+        self._stop_network_connection()
+        event.accept()
     
-    def _on_nav_prev(self) -> None:
-        """Go to previous move."""
-        if self.current_game:
-            self.current_game.undo_move()
-            self.board_widget.update()
-            self._update_move_label()
-    
-    def _on_nav_next(self) -> None:
-        """Go to next move."""
-        QMessageBox.information(self, "Info", "Next move feature coming soon")
-    
-    def _on_nav_last(self) -> None:
-        """Go to last move."""
-        QMessageBox.information(self, "Info", "Last move feature coming soon")
+
 
 
 if __name__ == "__main__":

@@ -366,6 +366,7 @@ class GoGame:
                 board.append(self.board[y * self.n1 + x])
         return board
     
+    @property
     def color_to_move(self) -> Stone:
         """
         Get whose turn it is.
