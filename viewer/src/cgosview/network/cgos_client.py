@@ -241,6 +241,22 @@ class CGOSClient:
             logger.error(f"Error sending command: {e}")
             return False
     
+    async def observe_game(self, gid: int) -> bool:
+        """
+        Send observe command for a specific game.
+        
+        This should be called when a user opens/clicks on a game to view it.
+        The server will respond with a SETUP message containing the game's moves.
+        
+        Args:
+            gid: Game ID to observe
+        
+        Returns:
+            True if observe command sent successfully, False otherwise
+        """
+        logger.info(f"Sending observe command for game {gid}")
+        return await self.send_command(f"observe {gid}")
+    
     async def heartbeat(self) -> None:
         """
         Send periodic heartbeat to detect dead connections.
@@ -307,47 +323,94 @@ class CGOSClient:
             logger.debug(f"Could not parse match message: {e}")
             return None
     
-    def _parse_setup_message(self, parts: List[str]) -> Optional[Tuple[int, List[Tuple[str, float]]]]:
+    def _parse_setup_message(self, parts: List[str]) -> Optional[Tuple[int, List[Tuple[str, float]], dict]]:
         """
         Parse CGOS SETUP message.
         
-        Format: setup gid date time size komi white(rating) black(rating) level [move time...]
-        
-        Server actually sends date and time, not placeholders!
+        Two formats:
+        1. Active game: setup gid - - size komi white(rating) black(rating) level [move time...]
+        2. Archived game: setup gid date time size komi white(rating) black(rating) level [move time...] result
         
         Args:
             parts: Split message parts (starting from "setup")
         
         Returns:
-            Tuple of (gid, moves_list) or None if parse error
+            Tuple of (gid, moves_list, game_data_dict) or None if parse error
+            where game_data_dict contains: date, time, board_size, komi, white_player, black_player, result
         """
         try:
-            # Setup message format:
-            # setup gid date time size komi white(rating) black(rating) level [move time...]
-            # parts[0]=setup, parts[1]=gid, parts[2]=date, parts[3]=time, parts[4]=size,
-            # parts[5]=komi, parts[6]=white, parts[7]=black, parts[8]=level, parts[9+]=moves
-            
             if len(parts) < 9:
                 logger.debug(f"Setup message too short: {len(parts)} parts")
                 return None
             
             gid = int(parts[1])
             
-            moves: List[Tuple[str, float]] = []
+            # Check if this is an active game (- -) or archived game (actual date/time)
+            is_active = parts[2] == "-" and parts[3] == "-"
+            
+            if is_active:
+                # Format: setup gid - - size komi white black level [moves...]
+                # parts[0]=setup, parts[1]=gid, parts[2]=-, parts[3]=-, parts[4]=size,
+                # parts[5]=komi, parts[6]=white, parts[7]=black, parts[8]=level, parts[9+]=moves
+                
+                date = "-"
+                time = "-"
+                board_size = int(parts[4])
+                komi = float(parts[5])
+                white_player = self._extract_player_name(parts[6])
+                black_player = self._extract_player_name(parts[7])
+                result = None
+                move_start_idx = 9
+            else:
+                # Format: setup gid date time size komi white black level [moves...] [result]
+                # parts[0]=setup, parts[1]=gid, parts[2]=date, parts[3]=time, parts[4]=size,
+                # parts[5]=komi, parts[6]=white, parts[7]=black, parts[8]=level, parts[9+]=moves
+                
+                date = parts[2]
+                time = parts[3]
+                board_size = int(parts[4])
+                komi = float(parts[5])
+                white_player = self._extract_player_name(parts[6])
+                black_player = self._extract_player_name(parts[7])
+                
+                # Parse moves and result (result is the last element if it's a result string)
+                move_start_idx = 9
+                result = None
+                
+                # Check if last part is a result (archived games have results)
+                if len(parts) > move_start_idx:
+                    last_part = parts[-1]
+                    if last_part.startswith("W+") or last_part.startswith("B+") or \
+                       last_part == "Draw" or "Resign" in last_part or last_part == "?":
+                        result = last_part
             
             # Parse moves (pairs of move and time)
-            # Moves start at parts[9] and go in pairs: move1 time1 move2 time2 ...
-            # Times in setup are just placeholders (all same value), not meaningful
-            for i in range(9, len(parts) - 1, 2):
+            moves: List[Tuple[str, float]] = []
+            
+            # Determine the end index for moves (exclude result if present)
+            move_end_idx = len(parts)
+            if result is not None and not is_active:
+                move_end_idx = len(parts) - 1
+            
+            for i in range(move_start_idx, move_end_idx - 1, 2):
                 try:
                     move = parts[i]
-                    # Time value - store but note it's not meaningful for move history
                     time_value = float(parts[i + 1])
                     moves.append((move, time_value))
                 except (ValueError, IndexError):
                     break
             
-            return (gid, moves)
+            game_data = {
+                "date": date,
+                "time": time,
+                "board_size": board_size,
+                "komi": komi,
+                "white_player": white_player,
+                "black_player": black_player,
+                "result": result
+            }
+            
+            return (gid, moves, game_data)
         except (ValueError, IndexError) as e:
             logger.debug(f"Could not parse setup message: {e}")
             return None
@@ -428,7 +491,7 @@ class CGOSClient:
         Returns:
             Tuple of (message_type, parsed_data) where message_type is one of:
             - "match": GameInfo object
-            - "setup": (gid, moves_list)
+            - "setup": (gid, moves_list, game_data_dict)
             - "update": (gid, move, time)
             - "gameover": (gid, result)
             - None: If message could not be parsed
@@ -467,13 +530,15 @@ class CGOSClient:
         Main loop to receive game updates from server.
         
         This method:
-        1. Sends protocol handshake (v1 viewer protocol)
-        2. Continuously reads game messages (match, setup, update, gameover)
-        3. Maintains game state from event-based protocol
-        4. Triggers callbacks for game changes
-        5. Handles errors gracefully
+        1. Receives and parses protocol request from server
+        2. Sends protocol handshake (v1 viewer protocol)
+        3. Continuously reads game messages (match, setup, update, gameover)
+        4. Maintains game state from event-based protocol
+        5. Triggers callbacks for game changes
+        6. Handles errors gracefully
         
         Protocol flow:
+        - Receive: "protocol genmove_analyze"
         - Send: v1 cgosview/1.0.0
         - Receive: MATCH messages listing games
         - Send: OBSERVE commands for games
@@ -489,7 +554,33 @@ class CGOSClient:
             return
         
         try:
-            # Send protocol handshake - MUST be first thing after connection
+            # Step 1: Receive protocol request from server
+            logger.info("Waiting for protocol request from server")
+            try:
+                protocol_line = await asyncio.wait_for(
+                    self.reader.readline(),
+                    timeout=self.connection_timeout
+                )
+                if not protocol_line:
+                    error = "Server closed connection before protocol exchange"
+                    logger.error(error)
+                    self.set_state(ConnectionState.ERROR, error)
+                    return
+                
+                protocol_msg = protocol_line.decode().strip()
+                logger.info(f"Received protocol request: {protocol_msg}")
+                
+                # Verify it's a protocol message (should be "protocol genmove_analyze")
+                if not protocol_msg.startswith("protocol"):
+                    logger.warning(f"Expected 'protocol' message, got: {protocol_msg}")
+            
+            except asyncio.TimeoutError:
+                error = f"Timeout waiting for protocol request ({self.connection_timeout}s)"
+                logger.error(error)
+                self.set_state(ConnectionState.ERROR, error)
+                return
+            
+            # Step 2: Send protocol identification in response
             logger.info("Sending viewer protocol identification")
             if not await self.send_command("v1 cgosview/1.0.0"):
                 logger.error("Failed to send protocol identification")
@@ -498,7 +589,6 @@ class CGOSClient:
             
             # Main receive loop
             logger.info("Starting game message receive loop")
-            games_to_observe: set = set()
             
             while self.connection_state == ConnectionState.CONNECTED:
                 try:
@@ -543,20 +633,24 @@ class CGOSClient:
                                               f"{game_info.white_player} vs {game_info.black_player}")
                                     if self.on_game_added:
                                         self.on_game_added(game_info)
-                                    
-                                    # Send observe command to get moves
-                                    if game_info.gid not in games_to_observe:
-                                        games_to_observe.add(game_info.gid)
-                                        await self.send_command(f"observe {game_info.gid}")
-                                        logger.debug(f"Sent observe command for game {game_info.gid}")
                         
                         elif msg_type == "setup":
-                            # Game setup with initial moves
-                            gid, moves = data
+                            # Game setup with initial moves (in response to observe command)
+                            gid, moves, game_data = data
                             if gid in self.active_games:
                                 game_info = self.active_games[gid]
                                 game_info.moves = moves
-                                logger.info(f"Game {gid} setup: {len(moves)} initial moves")
+                                
+                                # Update game info with data from SETUP message
+                                # For archived games, this includes date, time, and result
+                                if game_data.get("date") != "-":
+                                    game_info.date = game_data["date"]
+                                if game_data.get("time") != "-":
+                                    game_info.time = game_data["time"]
+                                if game_data.get("result"):
+                                    game_info.result = game_data["result"]
+                                
+                                logger.info(f"Game {gid} setup: {len(moves)} moves")
                                 if self.on_game_updated:
                                     self.on_game_updated(game_info)
                         

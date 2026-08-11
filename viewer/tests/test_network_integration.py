@@ -358,3 +358,146 @@ class TestErrorHandling:
         
         # Game should accept the move (validation happens in GoGame)
         assert len(game.moves) == 1
+
+
+class TestProtocolHandshake:
+    """Test CGOS protocol handshake sequence."""
+    
+    @pytest.mark.asyncio
+    async def test_protocol_handshake_correct_sequence(self):
+        """
+        Test that protocol handshake follows correct sequence.
+        
+        Verifies:
+        1. Client waits for server's "protocol" message
+        2. Client parses the protocol message
+        3. Client sends "v1" identification
+        4. Connection moves to game receive loop
+        """
+        client = CGOSClient(connection_timeout=5.0)
+        
+        # Mock the reader and writer
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        
+        # Setup the sequence of messages
+        # Step 1: Server sends protocol request
+        protocol_msg = b"protocol genmove_analyze\n"
+        
+        # Step 2: Server sends game list after handshake
+        match_msg = b"match 1 2024-01-01 12:00 19 6.5 Engine1(2000) Engine2(2000) -\n"
+        
+        # Setup reader to return these in sequence
+        call_count = [0]
+        
+        async def mock_readline():
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return protocol_msg  # First call: protocol message
+            elif call_count[0] == 2:
+                return match_msg  # Second call: match message
+            else:
+                # Simulate connection close after test messages
+                await asyncio.sleep(0.01)
+                return b""  # Empty = server closed connection
+        
+        mock_reader.readline = mock_readline
+        
+        client.reader = mock_reader
+        client.writer = mock_writer
+        client.set_state(ConnectionState.CONNECTED)
+        
+        # Track sent commands
+        sent_commands = []
+        
+        async def mock_send_command(cmd):
+            sent_commands.append(cmd)
+            return True
+        
+        client.send_command = mock_send_command
+        
+        # Track callbacks
+        games_added = []
+        
+        def on_game_added(game):
+            games_added.append(game)
+        
+        client.on_game_added = on_game_added
+        
+        # Run receive_games (it will exit after receiving empty line)
+        await client.receive_games()
+        
+        # Verify the handshake sequence
+        assert len(sent_commands) >= 1, "Should send at least v1 identification"
+        assert sent_commands[0] == "v1 cgosview/1.0.0", \
+            f"Should send v1 identification, got {sent_commands[0]}"
+        
+        # Verify that games were received after handshake
+        assert len(games_added) == 1, f"Should receive 1 game, got {len(games_added)}"
+        assert games_added[0].gid == 1
+    
+    @pytest.mark.asyncio
+    async def test_protocol_handshake_timeout(self):
+        """Test that client times out if server doesn't send protocol message."""
+        client = CGOSClient(connection_timeout=0.1)
+        
+        # Mock reader that never returns anything
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        
+        async def mock_readline_timeout():
+            await asyncio.sleep(1.0)  # Sleep longer than timeout
+            return b""
+        
+        mock_reader.readline = mock_readline_timeout
+        
+        client.reader = mock_reader
+        client.writer = mock_writer
+        client.set_state(ConnectionState.CONNECTED)
+        
+        # Track error messages
+        error_messages = []
+        
+        def on_state_changed(state, error):
+            if error:
+                error_messages.append(error)
+        
+        client.on_connection_state_changed = on_state_changed
+        
+        # Run receive_games (should timeout)
+        await client.receive_games()
+        
+        # Verify error was logged
+        assert any("timeout" in msg.lower() for msg in error_messages), \
+            f"Expected timeout error, got: {error_messages}"
+    
+    @pytest.mark.asyncio
+    async def test_protocol_handshake_connection_closed(self):
+        """Test that client handles server closing before protocol exchange."""
+        client = CGOSClient()
+        
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        
+        # Server closes immediately (returns empty)
+        mock_reader.readline = AsyncMock(return_value=b"")
+        
+        client.reader = mock_reader
+        client.writer = mock_writer
+        client.set_state(ConnectionState.CONNECTED)
+        
+        # Track error messages
+        error_messages = []
+        
+        def on_state_changed(state, error):
+            if error:
+                error_messages.append(error)
+        
+        client.on_connection_state_changed = on_state_changed
+        
+        # Run receive_games
+        await client.receive_games()
+        
+        # Verify error was logged
+        assert any("closed connection" in msg.lower() for msg in error_messages), \
+            f"Expected closed connection error, got: {error_messages}"

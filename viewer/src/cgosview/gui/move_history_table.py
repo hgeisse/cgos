@@ -63,7 +63,7 @@ class MoveHistoryTable(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         
         # Font for table
-        self.setFont(QFont("Arial", 10))
+        self.setFont(QFont("Consolas", 10))
         
         logger.debug("MoveHistoryTable initialized")
     

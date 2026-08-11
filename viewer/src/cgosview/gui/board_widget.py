@@ -242,7 +242,7 @@ class GameBoardWidget(QWidget):
         Args:
             painter: QPainter instance
         """
-        font = QFont("Arial", 8)
+        font = QFont("Consolas", 10)
         painter.setFont(font)
         painter.setPen(QPen(self.text_color))
         

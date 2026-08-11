@@ -103,13 +103,16 @@ class MainWindow(QMainWindow):
         left_layout = QVBoxLayout()
         
         # Server info
-        server_label = QLabel(f"Server:  {self.config.server}        Port:  {self.config.port}")
-        server_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        monospace_font = QFont("Consolas", 10)
+        server_label = QLabel(f"Server: {self.config.server}      Port: {self.config.port}")
+        server_label.setFont(QFont("Consolas", 10, QFont.Weight.Bold))
+        server_label.setFont(monospace_font)
+        server_label.setStyleSheet("font-weight: bold; padding: 5px 0px;")
         left_layout.addWidget(server_label)
         
         # Games list header with column titles
         monospace_font = QFont("Consolas", 10)
-        header_label = QLabel(" Game  White            Black            Result")
+        header_label = QLabel("Game   White            Black            Result")
         header_label.setFont(monospace_font)
         header_label.setStyleSheet("font-weight: bold; padding: 5px 0px;")
         left_layout.addWidget(header_label)
@@ -120,11 +123,6 @@ class MainWindow(QMainWindow):
         monospace_font = QFont("Consolas", 10)
         self.games_widget.setFont(monospace_font)
         left_layout.addWidget(self.games_widget)
-        
-        # Open games count
-        self.open_count_label = QLabel("Open tabs: 0/8")
-        self.open_count_label.setStyleSheet("color: #666; font-size: 9px;")
-        left_layout.addWidget(self.open_count_label)
         
         left_panel.setLayout(left_layout)
         
@@ -137,15 +135,10 @@ class MainWindow(QMainWindow):
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(left_panel)
         splitter.addWidget(self.tab_widget)
-        splitter.setSizes([420, 980])
+        splitter.setSizes([455, 945])
         
         main_layout.addWidget(splitter)
         central.setLayout(main_layout)
-        
-        # Status bar
-        status_bar = self.statusBar()
-        if status_bar:
-            status_bar.showMessage("Ready")
     
     def _apply_styles(self) -> None:
         """Apply application styles."""
@@ -352,6 +345,9 @@ class MainWindow(QMainWindow):
         """
         Open a new tab for the game, or switch to existing tab if already open.
         
+        When opening a new tab, sends an observe command to the server to request
+        the complete game data (including move list).
+        
         Args:
             gid: Game ID to open/switch to
         """
@@ -386,14 +382,11 @@ class MainWindow(QMainWindow):
         tab_index = self.tab_widget.addTab(tab, tab.get_tab_title())
         self.tab_widget.setCurrentIndex(tab_index)
         
-        # Update open count
-        self._update_open_count()
-        
-        status_bar = self.statusBar()
-        if status_bar:
-            status_bar.showMessage(f"Opened game {gid}")
-        
         logger.info(f"Opened new tab for game {gid}")
+        
+        # Send observe command to server to get complete game data (moves, result)
+        if self.client and self.async_thread:
+            self.async_thread.run_async(self.client.observe_game(gid))
     
     def _on_tab_close_requested(self, index: int) -> None:
         """
@@ -408,13 +401,7 @@ class MainWindow(QMainWindow):
             self.tab_widget.removeTab(index)
             if gid in self.open_tabs:
                 del self.open_tabs[gid]
-            self._update_open_count()
             logger.info(f"Closed tab for game {gid}")
-    
-    def _update_open_count(self) -> None:
-        """Update the open games counter label."""
-        count = len(self.open_tabs)
-        self.open_count_label.setText(f"Open tabs: {count}/{self.MAX_OPEN_GAMES}")
     
     def _format_game_list_item(self, game: GameInfo) -> str:
         """

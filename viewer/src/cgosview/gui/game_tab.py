@@ -62,64 +62,77 @@ class GameTab(QWidget):
     
     def _create_ui(self) -> None:
         """Create the tab's user interface."""
-        layout = QVBoxLayout()
-        
-        # ===== Game Info =====
+        layout = QHBoxLayout()
+
+        # Tab (left side): Info, Board, Navigation
+        layout_left_side = QVBoxLayout()
+
+        # Tab (left side, top): Info
         self.game_info_label = QLabel()
-        self.game_info_label.setFont(QFont("Arial", 10))
-        self.game_info_label.setStyleSheet("padding: 10px;")
-        layout.addWidget(self.game_info_label)
-        
-        # ===== Board and Move History with Splitter =====
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        
-        # Board widget (left side)
+        self.game_info_label.setFont(QFont("Consolas", 10))
+        layout_left_side.addWidget(self.game_info_label)
+
+        # Tab (left side, middle): Board
         self.board_widget = GameBoardWidget(self.game_info.board_size)
         self.board_widget.setMinimumSize(QSize(600, 600))
-        splitter.addWidget(self.board_widget)
-        
-        # Move history table (right side)
-        self.move_history_table = MoveHistoryTable()
-        self.move_history_table.setMinimumWidth(250)
-        self.move_history_table.move_clicked.connect(self._on_move_table_clicked)
-        splitter.addWidget(self.move_history_table)
-        
-        # Set initial split proportion (70% board, 30% table)
-        splitter.setStretchFactor(0, 7)
-        splitter.setStretchFactor(1, 3)
-        
-        layout.addWidget(splitter)
-        
-        # ===== Navigation Controls =====
+        layout_left_side.addWidget(self.board_widget)
+
+        # Tab (left side, bottom): Navigation
         nav_layout = QHBoxLayout()
-        
+
         self.nav_first = QPushButton("<<")
         self.nav_first.setMaximumWidth(60)
         self.nav_first.clicked.connect(self._on_nav_first)
         nav_layout.addWidget(self.nav_first)
-        
+
         self.nav_prev = QPushButton("<")
         self.nav_prev.setMaximumWidth(60)
         self.nav_prev.clicked.connect(self._on_nav_prev)
         nav_layout.addWidget(self.nav_prev)
-        
+
         self.move_label = QLabel("Move: 0/0")
         self.move_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         nav_layout.addWidget(self.move_label)
-        
+
         self.nav_next = QPushButton(">")
         self.nav_next.setMaximumWidth(60)
         self.nav_next.clicked.connect(self._on_nav_next)
         nav_layout.addWidget(self.nav_next)
-        
+
         self.nav_last = QPushButton(">>")
         self.nav_last.setMaximumWidth(60)
         self.nav_last.clicked.connect(self._on_nav_last)
         nav_layout.addWidget(self.nav_last)
-        
-        layout.addLayout(nav_layout)
+
+        layout_left_side.addLayout(nav_layout)
+
+        layout.addLayout(layout_left_side)
+
+        # Tab (right side): Move History Table
+        self.move_history_table = MoveHistoryTable()
+        self.move_history_table.setMinimumWidth(250)
+        self.move_history_table.move_clicked.connect(self._on_move_table_clicked)
+        layout.addWidget(self.move_history_table)
         
         self.setLayout(layout)
+
+        # ===== Game Info =====
+#        layout.addWidget(self.game_info_label)
+        
+#        # ===== Board and Move History with Splitter =====
+#        splitter = QSplitter(Qt.Orientation.Horizontal)
+        
+        # Board widget (left side)
+#        splitter.addWidget(self.board_widget)
+        
+#        # Set initial split proportion (70% board, 30% table)
+#        splitter.setStretchFactor(0, 7)
+#        splitter.setStretchFactor(1, 3)
+        
+#        layout.addWidget(splitter)
+        
+        
+#        layout.addLayout(nav_layout)
     
     def _load_game(self, game_info: GameInfo) -> None:
         """
