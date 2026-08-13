@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         
         self.setWindowTitle("CGOSVIEW - Go Game Viewer")
-        self.setGeometry(100, 100, 1400, 800)
+        self.setGeometry(100, 100, 1180, 620)
         
         # Configuration
         self.config = config or ViewerConfig()

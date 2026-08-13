@@ -74,7 +74,7 @@ class GameTab(QWidget):
 
         # Tab (left side, middle): Board
         self.board_widget = GameBoardWidget(self.game_info.board_size)
-        self.board_widget.setMinimumSize(QSize(600, 600))
+        self.board_widget.setMinimumSize(QSize(465, 465))
         layout_left_side.addWidget(self.board_widget)
 
         # Tab (left side, bottom): Navigation
