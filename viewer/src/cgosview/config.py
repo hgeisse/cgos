@@ -20,8 +20,8 @@ class ViewerConfig:
     port: int = 6809
     """CGOS server port"""
     
-    max_games: int = 10
-    """Maximum number of concurrent games to track"""
+    max_games: int = 50
+    """Maximum number of games to track in the game list"""
     
     connection_timeout: float = 10.0
     """Connection timeout in seconds"""
@@ -78,8 +78,8 @@ def parse_args(args: Optional[list] = None) -> ViewerConfig:
     parser.add_argument(
         '--max-games',
         type=int,
-        default=10,
-        help='Maximum concurrent games to track (default: 10)'
+        default=50,
+        help='Maximum games to track in the game list (default: 50)'
     )
     
     parser.add_argument(

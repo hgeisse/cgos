@@ -204,7 +204,7 @@ class TestGameUpdates:
 
 
 class TestMultipleGames:
-    """Test handling multiple concurrent games."""
+    """Test handling multiple games."""
     
     def test_create_multiple_games(self):
         """Test creating multiple game objects."""

@@ -168,7 +168,7 @@ Best for: Contributing code, extending functionality, advanced development
 - PROJECT_ANALYSIS.md → Network Client (Section 2)
 - DEVELOPER_GUIDE.md → Network Protocol
 - QUICK_REFERENCE.md → CGOSClient class
-- Source: `src/cgosview/network/cgos_client.py` (608 lines)
+- Source: `src/cgosview/network/cgos_client.py` (702 lines)
 - Tests: `tests/test_network_integration.py`, `tests/test_cgos_protocol.py`
 
 **GUI/UI**:
@@ -207,13 +207,14 @@ Best for: Contributing code, extending functionality, advanced development
 
 | Metric | Value |
 |--------|-------|
-| **Total Documentation** | ~50 KB (3 comprehensive files) |
-| **Project Size** | ~4,337 lines of code |
+| **Total Documentation** | ~51 KB (4 comprehensive files) |
+| **Project Size** | ~4,783 lines of code (2,820 source + 1,963 tests) |
 | **Python Files** | 21 files |
 | **Test Coverage** | 6 test files, 518+ lines |
 | **Core Components** | 9 major modules |
 | **Supported Board Sizes** | 7×7 to 25×25 (standard Go) |
-| **Max Concurrent Games** | 10 |
+| **Max Games in Game List** | 50 |
+| **Max Game Tabs** | 10 |
 | **Min Python Version** | 3.10 |
 | **License** | MIT |
 

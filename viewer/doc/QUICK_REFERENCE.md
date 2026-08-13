@@ -26,8 +26,8 @@ cgosview --max-games 5 --timeout 20
 | Component | Purpose | Key Files |
 |-----------|---------|-----------|
 | **Game Engine** | Go rules, move validation, capture detection | `game/gogame.py` (457 lines) |
-| **Network** | Async CGOS server communication | `network/cgos_client.py` (608 lines) |
-| **GUI** | PyQt6 interface, game tabs, board rendering | `gui/*.py` (1,125 lines) |
+| **Network** | Async CGOS server communication | `network/cgos_client.py` (702 lines) |
+| **GUI** | PyQt6 interface, game tabs, board rendering | `gui/*.py` (1,322 lines) |
 | **Config** | Command-line arguments, settings | `config.py` (120 lines) |
 | **Utils** | Threading, async integration | `utils/threading.py` (120 lines) |
 | **Tests** | Unit/integration tests | `tests/*.py` (518+ lines) |
@@ -151,7 +151,7 @@ board.update_board(game)  # Redraw board
 class ViewerConfig:
     server: str = "cgos-hg.de"
     port: int = 6809
-    max_games: int = 10
+    max_games: int = 50
     connection_timeout: float = 10.0
     heartbeat_interval: float = 30.0
     reconnect_max_retries: int = 5
@@ -164,7 +164,7 @@ class ViewerConfig:
 cgosview [server] [port] [options]
 
 Options:
-  --max-games N          Max concurrent games (default: 10)
+  --max-games N          Max games in game list (default: 50)
   --timeout SECONDS      Connection timeout (default: 10.0)
   --heartbeat SECONDS    Heartbeat interval (default: 30.0)
 
@@ -304,7 +304,8 @@ black src/ tests/ && ruff check src/ tests/ && mypy src/
 |---------|-------|
 | Min board size | 7 |
 | Max board size | 25 |
-| Max concurrent games | 10 |
+| Max games in game list | 50 |
+| Max game tabs | 10 |
 | Connection timeout | 10.0s |
 | Heartbeat interval | 30.0s |
 | Max reconnect attempts | 5 |
@@ -369,12 +370,12 @@ Falls back to plain colors if images unavailable.
 ## File Sizes Summary
 
 ```
-Total: ~4,337 lines of Python code
+Total: ~4,783 lines of Python code
   - Game logic: 457 lines
-  - Network: 608 lines
-  - GUI: 1,125 lines
+  - Network: 702 lines
+  - GUI: 1,322 lines (board: 310, main: 486, tab: 287, history: 191, signals: 43, init: 5)
   - Config/Utils: 240 lines
-  - Tests: 518+ lines
+  - Tests: 1,963 lines
   - Graphics: 3 PNG files (~10 KB)
 ```
 

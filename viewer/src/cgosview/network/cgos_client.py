@@ -99,7 +99,7 @@ class CGOSClient:
         heartbeat_interval: float = 30.0,
         max_retries: int = 5,
         reconnect_base_delay: float = 1.0,
-        max_games: int = 8
+        max_games: int = 50
     ):
         """
         Initialize CGOS client.
@@ -111,7 +111,7 @@ class CGOSClient:
             heartbeat_interval: Heartbeat interval in seconds
             max_retries: Maximum reconnection attempts
             reconnect_base_delay: Base delay for exponential backoff
-            max_games: Maximum number of concurrent games to track
+            max_games: Maximum number of games to track in the game list
         """
         self.host = host
         self.port = port

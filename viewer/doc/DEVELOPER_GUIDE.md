@@ -758,7 +758,7 @@ self.long_function_name(
 config = ViewerConfig(
     server="cgos-hg.de",
     port=6809,
-    max_games=10,
+    max_games=50,
 )
 ```
 

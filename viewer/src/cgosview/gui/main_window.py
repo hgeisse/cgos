@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
     Manages network connection and real-time game updates across all tabs.
     """
     
+    # limit on how many game tabs can be open simultaneously
     MAX_OPEN_GAMES = 10
     
     def __init__(self, config: Optional[ViewerConfig] = None):
@@ -110,7 +111,7 @@ class MainWindow(QMainWindow):
         server_label.setStyleSheet("font-weight: bold; padding: 5px 0px;")
         left_layout.addWidget(server_label)
         
-        # Games list header with column titles
+        # Game list header with column titles
         monospace_font = QFont("Consolas", 10)
         header_label = QLabel("Game   White            Black            Result")
         header_label.setFont(monospace_font)

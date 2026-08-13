@@ -8,7 +8,7 @@
 - **Language**: Python 3.10+
 - **License**: MIT
 - **Version**: 1.0.0
-- **Total Lines of Code**: ~4,337 (21 Python files)
+- **Total Lines of Code**: ~4,783 (21 Python files: 2,820 source + 1,963 tests)
 - **Current Status**: Beta (Development Status :: 4 - Beta)
 
 ---
@@ -28,14 +28,14 @@ cgosview/
 │   │   └── gogame.py                # Complete Go game implementation (457 lines)
 │   ├── network/                     # Network communication layer
 │   │   ├── __init__.py
-│   │   └── cgos_client.py           # Async CGOS server client (608 lines)
+│   │   └── cgos_client.py           # Async CGOS server client (702 lines)
 │   ├── gui/                         # PyQt6 graphical interface
 │   │   ├── __init__.py
 │   │   ├── signals.py               # Thread-safe Qt signals (43 lines)
-│   │   ├── main_window.py           # Main application window (498 lines)
-│   │   ├── game_tab.py              # Individual game tab widget (274 lines)
+│   │   ├── main_window.py           # Main application window (486 lines)
+│   │   ├── game_tab.py              # Individual game tab widget (287 lines)
 │   │   ├── board_widget.py          # Go board rendering widget (310 lines)
-│   │   └── move_history_table.py    # Move list display widget
+│   │   └── move_history_table.py    # Move list display widget (191 lines)
 │   ├── utils/                       # Utility modules
 │   │   ├── __init__.py
 │   │   └── threading.py             # Asyncio/threading integration (120 lines)
@@ -133,7 +133,7 @@ cgosview/
   - Protocol handshake (v1 viewer protocol)
   - Heartbeat mechanism for connection health
   - Event callbacks for game updates
-  - Maximum of 8 concurrent games (configurable)
+  - Maximum of 50 games in game list (configurable)
 
 **Key Methods**:
 - `async connect() -> bool`: Establish TCP connection
@@ -252,7 +252,7 @@ cgosview/
 ```python
 server: str = "cgos-hg.de"
 port: int = 6809
-max_games: int = 10
+max_games: int = 50
 connection_timeout: float = 10.0
 heartbeat_interval: float = 30.0
 reconnect_max_retries: int = 5
@@ -477,7 +477,7 @@ GameTab._on_nav_next()
 ## Known Limitations & Future Improvements
 
 ### Current Limitations
-1. Maximum 10 concurrent games (hardcoded in MainWindow)
+1. Maximum 10 concurrent game tabs (hardcoded in MainWindow)
 2. Board size limited to 7-25 (standard Go sizes only)
 3. No SGF (Smart Game Format) import/export
 4. No local game play (viewer-only)
@@ -561,15 +561,15 @@ cgosview --timeout 20.0
 | `__init__.py` | 24 lines | Package metadata |
 | `config.py` | 120 lines | Config/arg parsing |
 | `gogame.py` | 457 lines | Go rules engine |
-| `cgos_client.py` | 608 lines | Network client |
-| `main_window.py` | 498 lines | Main UI window |
-| `game_tab.py` | 274 lines | Game tab widget |
+| `cgos_client.py` | 702 lines | Network client |
+| `main_window.py` | 486 lines | Main UI window |
+| `game_tab.py` | 287 lines | Game tab widget |
 | `board_widget.py` | 310 lines | Board rendering |
-| `move_history_table.py` | ~200 lines | Move list display |
+| `move_history_table.py` | 191 lines | Move list display |
 | `signals.py` | 43 lines | Qt signals |
 | `threading.py` | 120 lines | Async thread helpers |
-| Test files | 518+ lines | Unit/integration tests |
-| **Total** | **~4,337** | |
+| Test files | 1,963 lines | Unit/integration tests |
+| **Total** | **~4,783** | |
 
 ---
 
@@ -621,7 +621,8 @@ Main Thread              Async Thread
 5. **Lazy Board Rendering**: Only redraw on updates
 
 ### Scalability
-- Concurrent games: Limited to 10 (configured)
+- Games in game list: Limited to 50 (configured)
+- Concurrent game tabs: Limited to 10 (hardcoded)
 - Board sizes: 7-25 (all standard Go sizes)
 - Network throughput: Depends on server send rate
 - Memory: ~1MB per game (history + moves)
