@@ -257,21 +257,7 @@ class CGOSClient:
         logger.info(f"Sending observe command for game {gid}")
         return await self.send_command(f"observe {gid}")
     
-    async def heartbeat(self) -> None:
-        """
-        Send periodic heartbeat to detect dead connections.
-        
-        This is a simple implementation that sends empty lines.
-        Real servers typically handle keep-alive differently.
-        """
-        while self.connection_state == ConnectionState.CONNECTED:
-            try:
-                await asyncio.sleep(self.heartbeat_interval)
-                # Simple heartbeat by sending empty line or continue listening
-                # The main receive loop already handles keep-alive implicitly
-            except Exception as e:
-                logger.debug(f"Heartbeat error: {e}")
-    
+
     def _parse_match_message(self, parts: List[str]) -> Optional[GameInfo]:
         """
         Parse CGOS MATCH message.
