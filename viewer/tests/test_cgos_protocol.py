@@ -83,7 +83,7 @@ class TestCGOSProtocolParsing:
         msg = self.client._parse_message(line)
         
         assert msg is not None
-        msg_type, (gid, moves) = msg
+        msg_type, (gid, moves, game_data) = msg
         assert msg_type == "setup"
         assert gid == 12345
         assert len(moves) == 3
@@ -97,7 +97,7 @@ class TestCGOSProtocolParsing:
         msg = self.client._parse_message(line)
         
         assert msg is not None
-        msg_type, (gid, moves) = msg
+        msg_type, (gid, moves, game_data) = msg
         assert msg_type == "setup"
         assert gid == 12350
         assert len(moves) == 0
@@ -108,7 +108,7 @@ class TestCGOSProtocolParsing:
         msg = self.client._parse_message(line)
         
         assert msg is not None
-        msg_type, (gid, moves) = msg
+        msg_type, (gid, moves, game_data) = msg
         assert len(moves) == 1  # D4 without time is ignored
         assert moves[0] == ("E5", 2.45)
     
@@ -242,7 +242,7 @@ class TestCGOSProtocolParsing:
         msg = self.client._parse_message(line)
         
         assert msg is not None
-        msg_type, (gid, moves) = msg
+        msg_type, (gid, moves, game_data) = msg
         assert moves[0][0] == "A1"
     
     def test_parse_corner_move_s19(self):
@@ -251,7 +251,7 @@ class TestCGOSProtocolParsing:
         msg = self.client._parse_message(line)
         
         assert msg is not None
-        msg_type, (gid, moves) = msg
+        msg_type, (gid, moves, game_data) = msg
         assert moves[0][0] == "S19"
     
     def test_extract_player_name_with_rating(self):
