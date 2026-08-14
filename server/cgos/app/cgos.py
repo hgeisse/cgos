@@ -345,7 +345,7 @@ def compute_MAP_ratings(num_players, w, anchors):
         rms = (rms / num_players) ** 0.5
         s = s_new
         if rms < 1.0e-3:
-            print(f'number of iterations: {iter}')
+            #print(f'number of iterations: {iter}')
             break
     # Compute the linear regression line of the score-to-Elo mapping.
     # Its slope is known to be 400/ln(10), because the iteration assumes
@@ -358,7 +358,7 @@ def compute_MAP_ratings(num_players, w, anchors):
     slope = 400.0 / np.log(10.0)
     intercept = np.mean(y) - slope * np.mean(x)
     line_coeff = [slope, intercept]
-    print(f'line coefficients = {line_coeff}')
+    #print(f'line coefficients = {line_coeff}')
     line = np.poly1d(line_coeff)
     # compute Elo ratings of all players
     ratings = line(s)
@@ -382,8 +382,8 @@ def bayesRate() -> None:
     if num_players < 2:
         # less than two players: no rating possible
         return
-    print(f'{num_players} players, player_to_idx = {player_to_idx}')
-    print(f'idx_to_player = {idx_to_player}')
+    #print(f'{num_players} players, player_to_idx = {player_to_idx}')
+    #print(f'idx_to_player = {idx_to_player}')
     # count wins in the win matrix wij
     wij = np.zeros((num_players, num_players), dtype=float)
     res = db.execute('SELECT gid, w, b, res, dte FROM games')
@@ -392,7 +392,7 @@ def bayesRate() -> None:
     if num_games == 0:
         # no games: no rating possible
         return
-    print(f'Bayes-rating {num_games} games')
+    #print(f'Bayes-rating {num_games} games')
     for (gid, w, b, res, dte) in games:
         w_idx = player_to_idx[w]
         b_idx = player_to_idx[b]
@@ -405,7 +405,7 @@ def bayesRate() -> None:
         bres = 1.0 - wres
         wij[w_idx, b_idx] += wres
         wij[b_idx, w_idx] += bres
-    print(f'w[i, j] =\n{wij}')
+    #print(f'w[i, j] =\n{wij}')
     # get anchor players
     anchor_dict = getAnchors()
     anchors = [
@@ -415,12 +415,12 @@ def bayesRate() -> None:
     if num_anchors == 0:
         # no anchors: no rating possible
         return
-    print(f'{num_anchors} anchors = {anchors}')
+    #print(f'{num_anchors} anchors = {anchors}')
     # find maximum a posteriori ratings
     ratings = compute_MAP_ratings(num_players, wij, anchors)
-    for idx in range(num_players):
-        elo = ratings[idx]
-        print(f'player {idx} ({idx_to_player[idx]}): {elo} Elo points')
+    #for idx in range(num_players):
+    #    elo = ratings[idx]
+    #    print(f'player {idx} ({idx_to_player[idx]}): {elo} Elo points')
     # write ratings back to database
     with db:
         for idx in range(num_players):
