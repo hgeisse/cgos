@@ -140,11 +140,20 @@ class GameBoardWidget(QWidget):
         # Draw background (white/transparent)
         painter.fillRect(self.rect(), QColor("#FFFFFF"))
         
+        # Calculate centering offset to center smaller boards within the widget
+        widget_width = self.width()
+        widget_height = self.height()
+        offset_x = (widget_width - self.canvas_size) // 2
+        offset_y = (widget_height - self.canvas_size) // 2
+        # Ensure offsets are at least 0 (in case widget is smaller than canvas)
+        offset_x = max(0, offset_x)
+        offset_y = max(0, offset_y)
+        
         # Draw board square background with border around grid and coordinates
         board_square_size = (self.board_size - 1) * self.SQUARE_SIZE
         border = 35
-        board_rect_x = self.BOARD_OFFSET - border
-        board_rect_y = self.BOARD_OFFSET - border
+        board_rect_x = self.BOARD_OFFSET - border + offset_x
+        board_rect_y = self.BOARD_OFFSET - border + offset_y
         board_rect_size = board_square_size + (2 * border)
         
         # Draw wood texture or fallback to solid color
@@ -162,56 +171,60 @@ class GameBoardWidget(QWidget):
             painter.fillRect(board_rect_x, board_rect_y, board_rect_size, board_rect_size, self.board_color)
         
         # Draw board grid
-        self._draw_board(painter)
+        self._draw_board(painter, offset_x, offset_y)
         
         # Draw stones
-        self._draw_stones(painter)
+        self._draw_stones(painter, offset_x, offset_y)
         
         # Draw coordinates
-        self._draw_coordinates(painter)
+        self._draw_coordinates(painter, offset_x, offset_y)
         
         # Draw handicap points (for full boards)
         if self.board_size >= 7:
-            self._draw_handicap_points(painter)
+            self._draw_handicap_points(painter, offset_x, offset_y)
     
-    def _draw_board(self, painter: QPainter) -> None:
+    def _draw_board(self, painter: QPainter, offset_x: int = 0, offset_y: int = 0) -> None:
         """
         Draw the board grid lines.
         
         Args:
             painter: QPainter instance
+            offset_x: Horizontal centering offset
+            offset_y: Vertical centering offset
         """
         pen = QPen(self.line_color, 1)
         painter.setPen(pen)
         
         # Draw vertical lines
         for i in range(self.board_size):
-            x = self.BOARD_OFFSET + i * self.SQUARE_SIZE
-            y1 = self.BOARD_OFFSET
-            y2 = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE
+            x = self.BOARD_OFFSET + i * self.SQUARE_SIZE + offset_x
+            y1 = self.BOARD_OFFSET + offset_y
+            y2 = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE + offset_y
             painter.drawLine(x, y1, x, y2)
         
         # Draw horizontal lines
         for i in range(self.board_size):
-            y = self.BOARD_OFFSET + i * self.SQUARE_SIZE
-            x1 = self.BOARD_OFFSET
-            x2 = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE
+            y = self.BOARD_OFFSET + i * self.SQUARE_SIZE + offset_y
+            x1 = self.BOARD_OFFSET + offset_x
+            x2 = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE + offset_x
             painter.drawLine(x1, y, x2, y)
     
-    def _draw_stones(self, painter: QPainter) -> None:
+    def _draw_stones(self, painter: QPainter, offset_x: int = 0, offset_y: int = 0) -> None:
         """
         Draw black and white stones on the board.
         
         Args:
             painter: QPainter instance
+            offset_x: Horizontal centering offset
+            offset_y: Vertical centering offset
         """
         for y in range(self.board_size):
             for x in range(self.board_size):
                 stone = self.board[y * self.board_size + x]
                 
                 if stone != Stone.EMPTY:
-                    px = self.BOARD_OFFSET + x * self.SQUARE_SIZE
-                    py = self.BOARD_OFFSET + y * self.SQUARE_SIZE
+                    px = self.BOARD_OFFSET + x * self.SQUARE_SIZE + offset_x
+                    py = self.BOARD_OFFSET + y * self.SQUARE_SIZE + offset_y
                     
                     # Draw stone from image or fallback to circle
                     if stone == Stone.BLACK and self.black_stone and not self.black_stone.isNull():
@@ -235,12 +248,14 @@ class GameBoardWidget(QWidget):
                         painter.drawEllipse(px - radius, py - radius, 
                                           radius * 2, radius * 2)
     
-    def _draw_coordinates(self, painter: QPainter) -> None:
+    def _draw_coordinates(self, painter: QPainter, offset_x: int = 0, offset_y: int = 0) -> None:
         """
         Draw board coordinates (file and rank labels).
         
         Args:
             painter: QPainter instance
+            offset_x: Horizontal centering offset
+            offset_y: Vertical centering offset
         """
         font = QFont("Consolas", 10)
         painter.setFont(font)
@@ -249,33 +264,33 @@ class GameBoardWidget(QWidget):
         # Column labels (A-Z)
         for i in range(self.board_size):
             label = self.columns[i]
-            x = self.BOARD_OFFSET + i * self.SQUARE_SIZE
+            x = self.BOARD_OFFSET + i * self.SQUARE_SIZE + offset_x
             
             # Top row - 20 pixels above the board
-            y_top = self.BOARD_OFFSET - 20
+            y_top = self.BOARD_OFFSET - 20 + offset_y
             painter.drawText(x - 5, y_top - 5, 10, 10, 
                             Qt.AlignmentFlag.AlignCenter, label)
             
             # Also at bottom - 20 pixels below the board
-            y_bottom = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE + 20
+            y_bottom = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE + 20 + offset_y
             painter.drawText(x - 5, y_bottom - 5, 10, 10,
                             Qt.AlignmentFlag.AlignCenter, label)
         
         # Row labels (1-25)
         for i in range(self.board_size):
             label = self.rows[i]
-            y = self.BOARD_OFFSET + i * self.SQUARE_SIZE
-            x = self.BOARD_OFFSET - 25
+            y = self.BOARD_OFFSET + i * self.SQUARE_SIZE + offset_y
+            x = self.BOARD_OFFSET - 25 + offset_x
             
             painter.drawText(x, y - 4, 15, 10,
                             Qt.AlignmentFlag.AlignCenter, label)
             
             # Also at right side
-            x = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE + 20
+            x = self.BOARD_OFFSET + (self.board_size - 1) * self.SQUARE_SIZE + 20 + offset_x
             painter.drawText(x, y - 4, 15, 10,
                             Qt.AlignmentFlag.AlignCenter, label)
     
-    def _draw_handicap_points(self, painter: QPainter) -> None:
+    def _draw_handicap_points(self, painter: QPainter, offset_x: int = 0, offset_y: int = 0) -> None:
         """
         Draw handicap points on the board.
         
@@ -283,6 +298,8 @@ class GameBoardWidget(QWidget):
         
         Args:
             painter: QPainter instance
+            offset_x: Horizontal centering offset
+            offset_y: Vertical centering offset
         """
         # Handicap point positions for different board sizes (1-indexed coordinates)
         handicap_map = {
@@ -303,8 +320,8 @@ class GameBoardWidget(QWidget):
         painter.setBrush(QBrush(self.line_color))
         
         for col, row in points:
-            x = self.BOARD_OFFSET + (col - 1) * self.SQUARE_SIZE
-            y = self.BOARD_OFFSET + (row - 1) * self.SQUARE_SIZE
+            x = self.BOARD_OFFSET + (col - 1) * self.SQUARE_SIZE + offset_x
+            y = self.BOARD_OFFSET + (row - 1) * self.SQUARE_SIZE + offset_y
             
             # Draw small circle
             painter.drawEllipse(x - 3, y - 3, 6, 6)
