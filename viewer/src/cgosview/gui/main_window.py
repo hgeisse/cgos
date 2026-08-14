@@ -414,8 +414,7 @@ class MainWindow(QMainWindow):
         Returns:
             Formatted string for list display
         """
-        move_count = len(game.moves)
-        status = game.result or f"{move_count} moves"
+        status = game.result or "running"
         return f"{game.gid:5d}  {game.white_player:15s}  {game.black_player:15s}  [{status}]"
     
     def _update_game_list_item(self, game: GameInfo) -> None:
@@ -444,20 +443,20 @@ class MainWindow(QMainWindow):
             game: GameInfo with current status
         """
         if game.is_finished():
-            # Game finished - use different colors
+            # Game finished - can use different colors
             if game.result:
                 if game.result.startswith("W+"):
                     # White won
-                    item.setForeground(QColor(100, 100, 100))  # Gray for finished
+                    item.setForeground(QColor(0, 0, 0))  # Black for finished
                 elif game.result.startswith("B+"):
                     # Black won
-                    item.setForeground(QColor(100, 100, 100))  # Gray for finished
+                    item.setForeground(QColor(0, 0, 0))  # Black for finished
                 else:
                     # Draw or resignation
-                    item.setForeground(QColor(100, 100, 100))  # Gray for finished
+                    item.setForeground(QColor(0, 0, 0))  # Black for finished
         else:
-            # Game in progress - normal text
-            item.setForeground(QColor(0, 0, 0))
+            # Game in progress - magenta
+            item.setForeground(QColor(200, 0, 200))
     
     def closeEvent(self, event) -> None:
         """
