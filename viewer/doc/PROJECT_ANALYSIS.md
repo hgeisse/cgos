@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-**CGOSVIEW** is a modern Python application for viewing Go games on the CGOS (Computer Go Online Server) in real-time. It's a complete port of the original Tcl/Tk viewer, featuring a PyQt6-based GUI, full Go rules implementation, async networking, and comprehensive game replay capabilities.
+**CGOSVIEW** is a modern Python application for viewing Go games on the CGOS (Computer Go Server) in real-time. It's a complete port of the original Tcl/Tk viewer, featuring a PyQt6-based GUI, full Go rules implementation, async networking, and comprehensive game replay capabilities.
 
 - **Project Type**: Desktop GUI Application (PyQt6)
 - **Language**: Python 3.10+

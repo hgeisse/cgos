@@ -1,7 +1,7 @@
 # CGOS Server-Client Protocol - Comprehensive Analysis
 
 **Document Version**: 1.0  
-**System**: Computer Go Online Server (CGOS)  
+**System**: Computer Go Server (CGOS)  
 **Analysis Date**: August 2026  
 **Components**: Server (Python) + Viewer Client (Python/PyQt6)
 

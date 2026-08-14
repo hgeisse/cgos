@@ -1,7 +1,7 @@
 # CGOSVIEW - Quick Reference Guide
 
 ## Overview
-A Python PyQt6 application for viewing live Go games from the CGOS (Computer Go Online Server). Features real-time game streaming, complete Go rules validation, and tabbed multi-game viewing.
+A Python PyQt6 application for viewing live Go games from the CGOS (Computer Go Server). Features real-time game streaming, complete Go rules validation, and tabbed multi-game viewing.
 
 ## Quick Start
 

@@ -1,5 +1,5 @@
 """
-Async client for CGOS (Computer Go Online Server) communication.
+Async client for CGOS (Computer Go Server) communication.
 
 Handles non-blocking connection to CGOS server and game updates with
 robust error handling, reconnection logic, and protocol compliance.

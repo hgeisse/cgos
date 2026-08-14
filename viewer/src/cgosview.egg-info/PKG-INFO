@@ -32,7 +32,7 @@ Dynamic: license-file
 
 # CGOSVIEW
 
-A Python PyQt6 application for viewing live Go games on the CGOS (Computer Go Online Server) in real-time.
+A Python PyQt6 application for viewing live Go games on the CGOS (Computer Go Server) in real-time.
 
 ## Features
 

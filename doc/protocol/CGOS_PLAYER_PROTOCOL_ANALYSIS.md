@@ -1,7 +1,7 @@
 # CGOS Player Protocol - Comprehensive Analysis
 
 **Document Version**: 1.0  
-**System**: Computer Go Online Server (CGOS) - Player/Engine Protocol  
+**System**: Computer Go Server (CGOS) - Player/Engine Protocol  
 **Analysis Date**: August 2026  
 **Components**: Server (Python) + Engine Client (Python with GTP Bridge)
 
