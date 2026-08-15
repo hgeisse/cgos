@@ -77,7 +77,7 @@ sgfDir: "SGF"
 
 # compressSgf: should the SGF records be compressed?
 # type: bool, optional (default: false)
-compressSgf: true
+compressSgf: false
 
 # provisionalAge: days an entry will stay on WEB page if no games played
 # type: float, required
