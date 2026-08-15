@@ -245,12 +245,12 @@ def build_standings() -> None:
         dtime = f"{dte} {tme}"
 
         if k == 0:
-            print(f"{nme} -> {dtime}")
-            print(f"{nme} -> {pcut}\n")
+            #print(f"{nme} -> {dtime}")
+            #print(f"{nme} -> {pcut}\n")
 
             # provisionally rated player
             if dtime < pcut:
-                print(f"{nme} being excluded")
+                #print(f"{nme} being excluded")
                 continue
 
         if k == 1:
