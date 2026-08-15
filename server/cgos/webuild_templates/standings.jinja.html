@@ -71,8 +71,13 @@ table.players tr.newplayer td { background: #ffff80; }
 <tbody>
 {% for rec in sch %}
     <tr>
-    <td align=center>{{rec.gid}}</td><td>{{rec.wn}}</td><td>{{rec.tw}}</td><td>{{rec.bn}}</td><td>{{rec.tb}}</td>
-    <td>{{rec.res}} <a href="../../viewer.cgi?{{rec.vsgfpath}}">View</a></td></tr>
+    <td align=center>{{rec.gid}}</td>
+    <td>{{rec.wn}}</td>
+    <td>{{rec.tw}}</td>
+    <td>{{rec.bn}}</td>
+    <td>{{rec.tb}}</td>
+    <td>{{rec.res}}</td>
+    </tr>
 {% endfor %}
 
 {% for rec in gms %}
@@ -98,7 +103,6 @@ table.players tr.newplayer td { background: #ffff80; }
     {% else %}
         {{rec.res}}
     {% endif %}
-        <a href="../../viewer.cgi?{{rec.vsgfpath}}">View</a>
     </td>
     </tr>
 

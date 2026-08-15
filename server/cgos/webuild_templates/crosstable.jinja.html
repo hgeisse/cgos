@@ -87,7 +87,8 @@ tr.win { background: #f0f0e0; }
         {%- endif -%}
         '>
 
-        <td>{{rec.opp}}</td><td>{{rec.r}}</td>
+        <td>{{rec.opp}}</td>
+        <td>{{rec.r}}</td>
         <td>
             {% if rec.res[2] == "T" %}
                 <b>{{rec.res}}</b>
@@ -95,8 +96,10 @@ tr.win { background: #f0f0e0; }
                 {{rec.res}}
             {% endif %}
         </td>
-        <td>{{ '%02d' % (rec.my_time // 1000 // 60)}}:{{ '%02d' % (rec.my_time // 1000 % 60) }}</td><td>{{rec.my_r}}</td>
-        <td><a href="{{rec.sgfpath}}">{{rec.gid}}</a> <a href="../../viewer.cgi?{{rec.vsgfpath}}">View</a></td></tr>
+        <td>{{ '%02d' % (rec.my_time // 1000 // 60)}}:{{ '%02d' % (rec.my_time // 1000 % 60) }}</td>
+        <td>{{rec.my_r}}</td>
+        <td><a href="{{rec.sgfpath}}">{{rec.gid}}</a></td>
+        </tr>
     {% endfor %}
     </tbody>
     </table></center>
